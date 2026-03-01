@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 
-export const Home: React.FC = () => {
+const Home: React.FC = () => {
   return (
     <div className="flex flex-col gap-20 pb-20">
       {/* Hero Section */}
@@ -41,3 +41,5 @@ export const Home: React.FC = () => {
     </div>
   );
 };
+
+export default Home;

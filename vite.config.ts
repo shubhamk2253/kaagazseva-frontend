@@ -1,24 +1,31 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
   plugins: [react()],
+
   resolve: {
     alias: {
-      // Allows import { Button } from '@/components/ui/Button'
-      "@": path.resolve(__dirname, "./src"),
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+
   server: {
     port: 3000,
+
+    // 🔥 Only for LOCAL development
     proxy: {
-      // Forwards all /api calls to your Flask Monolith
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://localhost:5000', // Your local backend
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      }
-    }
-  }
+        secure: false,
+      },
+    },
+  },
+
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+  },
 });

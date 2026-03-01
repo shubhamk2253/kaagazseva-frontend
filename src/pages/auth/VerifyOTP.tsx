@@ -9,7 +9,7 @@ interface LocationState {
   mobile?: string;
 }
 
-export const VerifyOTP: React.FC = () => {
+const VerifyOTP: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -110,3 +110,5 @@ export const VerifyOTP: React.FC = () => {
     </div>
   );
 };
+
+export default VerifyOTP;
