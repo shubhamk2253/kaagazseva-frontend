@@ -1,37 +1,42 @@
 import React, { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { ApplicationTable } from '../../components/tables/ApplicationTable';
-import { applicationService } from '../../modules/application/applicationService';
-import { useApi } from '../../hooks/useApi';
-import type { Application } from '../../modules/application/types';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { ApplicationTable } from '@/components/tables/ApplicationTable';
+import { applicationService } from '@/modules/application/applicationService';
+import { useApi } from '@/hooks/useApi';
+import type { Application } from '@/modules/application/types';
 
-export const CustomerDashboard: React.FC = () => {
+const CustomerDashboard: React.FC = () => {
   const {
     data: apps,
     request: fetchApps,
-    loading,
-  } = useApi<Application[], []>(applicationService.getCustomerApplications);
+  } = useApi<Application[], []>(
+    applicationService.getCustomerApplications
+  );
 
   useEffect(() => {
     fetchApps();
   }, [fetchApps]);
 
-  // ✅ Always work with safe array
   const allApps = apps ?? [];
 
   const activeApps = useMemo(
     () =>
       allApps.filter(
-        (a) => a.status !== 'completed' && a.status !== 'rejected'
+        (a) =>
+          a.status !== 'completed' &&
+          a.status !== 'rejected'
       ),
     [allApps]
   );
 
   const completedCount = useMemo(
-    () => allApps.length - activeApps.length,
-    [allApps, activeApps]
+    () =>
+      allApps.filter(
+        (a) => a.status === 'completed'
+      ).length,
+    [allApps]
   );
 
   return (
@@ -47,16 +52,12 @@ export const CustomerDashboard: React.FC = () => {
         </div>
 
         <Link to="/customer/apply">
-          <Button
-            size="lg"
-            className="shadow-lg shadow-blue-200"
-          >
+          <Button size="lg" className="shadow-lg shadow-blue-200">
             New Application +
           </Button>
         </Link>
       </header>
 
-      {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border-l-4 border-blue-600">
           <p className="text-xs font-bold text-slate-400 uppercase">
@@ -78,9 +79,7 @@ export const CustomerDashboard: React.FC = () => {
       </div>
 
       <Card title="Recent Activity">
-        <ApplicationTable
-          data={allApps.slice(0, 5)}
-        />
+        <ApplicationTable data={allApps.slice(0, 5)} />
 
         <Link
           to="/customer/applications"
@@ -92,3 +91,5 @@ export const CustomerDashboard: React.FC = () => {
     </div>
   );
 };
+
+export default CustomerDashboard;

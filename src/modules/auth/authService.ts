@@ -1,54 +1,62 @@
 import apiClient from '@/config/apiClient';
 import { useAuthStore } from './authStore';
-import type { 
-  LoginDTO, 
-  VerifyOTPDTO, 
-  AuthResponse 
+import type {
+  LoginDTO,
+  VerifyOTPDTO,
+  AuthResponse,
+  UserRole,
 } from './types';
 
 /**
  * KAAGAZSEVA - Authentication Service
- * Responsible for API communication and local session sync.
+ * Fully aligned with Node backend structure
  */
 export const authService = {
-  /**
-   * Step 1: Request OTP
-   * Hits the backend to trigger an SMS/Mock OTP.
-   */
   async requestOtp(data: LoginDTO): Promise<{ message: string }> {
     const response = await apiClient.post('/auth/login', data);
     return response.data;
   },
 
-  /**
-   * Step 2: Verify OTP & Initialize Session
-   * Exchanges OTP for a JWT and User profile.
-   */
   async verifyOtp(data: VerifyOTPDTO): Promise<AuthResponse> {
     const response = await apiClient.post('/auth/verify-otp', data);
-    const authData: AuthResponse = response.data;
 
-    // 100/100 Discipline: Sync the global state immediately upon success
-    if (authData.access_token && authData.user) {
-      useAuthStore.getState().setAuth(authData.user, authData.access_token);
+    // Backend wraps inside { data: {...} }
+    const backendData = response.data?.data;
+
+    if (!backendData?.accessToken || !backendData?.user) {
+      throw new Error('Invalid authentication response from server');
     }
 
-    return authData;
+    // Normalize role to lowercase
+    const normalizedRole =
+      backendData.user.role.toLowerCase() as UserRole;
+
+    const formattedResponse: AuthResponse = {
+      accessToken: backendData.accessToken,
+      user: {
+        id: backendData.user.id,
+        phoneNumber: backendData.user.phoneNumber,
+        name: backendData.user.name ?? undefined,
+        role: normalizedRole,
+        createdAt: backendData.user.createdAt,
+      },
+    };
+
+    // Sync Zustand store
+    useAuthStore.getState().setAuth(
+      formattedResponse.user,
+      formattedResponse.accessToken
+    );
+
+    return formattedResponse;
   },
 
-  /**
-   * Logout
-   * Clears the session and redirects.
-   */
   logout(): void {
     useAuthStore.getState().logout();
     window.location.href = '/login';
   },
 
-  /**
-   * Get Current Session State
-   */
   getCurrentUser() {
     return useAuthStore.getState().user;
-  }
+  },
 };

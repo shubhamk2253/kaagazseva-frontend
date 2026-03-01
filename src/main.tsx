@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { App } from './App';
 
 // 1. Global Styles (Tailwind must be first)
-import './styles/index.css'; 
+import './index.css'; 
 
 /**
  * KAAGAZSEVA - Root Mounting Point

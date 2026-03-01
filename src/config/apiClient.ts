@@ -8,13 +8,11 @@ import { useAuthStore } from '@/modules/auth/authStore';
 import { getErrorMessage } from './errorMapper';
 
 /**
- * KAAGAZSEVA - National Infrastructure API Client
+ * KAAGAZSEVA - Production API Client (Node Backend Aligned)
  * Features:
  * - Auto JWT Injection
- * - Refresh Token Handling
- * - Request Retry System
- * - Global Error Mapping
- * - Toast Deduplication
+ * - Global Error Handling
+ * - 401 Auto Logout
  */
 
 const apiClient = axios.create({
@@ -27,7 +25,7 @@ const apiClient = axios.create({
 });
 
 /* ======================================================
-   🔒 REQUEST INTERCEPTOR
+   🔒 REQUEST INTERCEPTOR (JWT Injection)
 ====================================================== */
 
 apiClient.interceptors.request.use(
@@ -44,25 +42,6 @@ apiClient.interceptors.request.use(
 );
 
 /* ======================================================
-   🔁 REFRESH TOKEN SYSTEM
-====================================================== */
-
-let isRefreshing = false;
-let failedQueue: {
-  resolve: (value?: unknown) => void;
-  reject: (reason?: any) => void;
-}[] = [];
-
-const processQueue = (error: any, token: string | null) => {
-  failedQueue.forEach((prom) => {
-    if (error) prom.reject(error);
-    else prom.resolve(token);
-  });
-
-  failedQueue = [];
-};
-
-/* ======================================================
    🔓 RESPONSE INTERCEPTOR
 ====================================================== */
 
@@ -70,78 +49,22 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
 
   async (error: AxiosError) => {
-    const originalRequest: any = error.config;
     const status = error.response?.status;
 
     /* ========================================
-       🔁 Controlled Retry (Network / 5xx)
+       🔐 401 — Token Invalid / Expired
     ======================================== */
 
-    if (!error.response && !originalRequest._retry) {
-      originalRequest._retry = true;
-      return apiClient(originalRequest);
-    }
+    if (status === 401) {
+      useAuthStore.getState().logout();
 
-    if (status && status >= 500 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      return apiClient(originalRequest);
-    }
+      toast.error('Session expired. Please login again.', {
+        id: 'session-expired',
+      });
 
-    /* ========================================
-       🔐 401 — Token Expired Handling
-    ======================================== */
+      window.location.href = '/login';
 
-    if (status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({
-            resolve: (token: any) => {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-              resolve(apiClient(originalRequest));
-            },
-            reject,
-          });
-        });
-      }
-
-      isRefreshing = true;
-
-      try {
-        // 🔥 CALL REFRESH ENDPOINT
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
-          {},
-          { withCredentials: true } // Requires HttpOnly cookie
-        );
-
-        const newToken = response.data.accessToken;
-
-        // Update Zustand store
-        useAuthStore.getState().setAuth(
-          useAuthStore.getState().user!,
-          newToken
-        );
-
-        processQueue(null, newToken);
-
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return apiClient(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError, null);
-
-        // Refresh failed → Logout completely
-        useAuthStore.getState().logout();
-
-        toast.error('Session expired. Please login again.');
-
-        window.location.href = '/login';
-
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
-      }
+      return Promise.reject(error);
     }
 
     /* ========================================
@@ -150,11 +73,9 @@ apiClient.interceptors.response.use(
 
     const friendlyMessage = getErrorMessage(error);
 
-    if (status !== 401) {
-      toast.error(friendlyMessage, {
-        id: 'global-api-error',
-      });
-    }
+    toast.error(friendlyMessage, {
+      id: 'global-api-error',
+    });
 
     return Promise.reject(error);
   }

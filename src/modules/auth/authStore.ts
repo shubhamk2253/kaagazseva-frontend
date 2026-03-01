@@ -5,8 +5,8 @@ import type { User, UserRole } from './types';
 interface AuthState {
   user: User | null;
   token: string | null;
-  isAuthenticated: boolean;
   role: UserRole | null;
+  isAuthenticated: boolean;
   isLoading: boolean;
 
   // Actions
@@ -17,23 +17,23 @@ interface AuthState {
 
 /**
  * KAAGAZSEVA - Central Auth Store
- * Single source of truth for all security claims.
+ * Production-safe, backend-aligned authentication state.
  */
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
       token: null,
-      isAuthenticated: false,
       role: null,
+      isAuthenticated: false,
       isLoading: false,
 
       setAuth: (user, token) => {
         set({
           user,
           token,
-          isAuthenticated: true,
           role: user.role,
+          isAuthenticated: true,
           isLoading: false,
         });
       },
@@ -46,17 +46,26 @@ export const useAuthStore = create<AuthState>()(
         set({
           user: null,
           token: null,
-          isAuthenticated: false,
           role: null,
+          isAuthenticated: false,
           isLoading: false,
         });
 
-        sessionStorage.clear();
+        // Clear persisted storage safely
+        localStorage.removeItem('kaagaz-auth-storage');
       },
     }),
     {
       name: 'kaagaz-auth-storage',
       storage: createJSONStorage(() => localStorage),
+
+      // 🔥 Only persist essential security data
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        role: state.role,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 );

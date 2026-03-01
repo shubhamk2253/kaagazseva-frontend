@@ -35,11 +35,13 @@ export const ApplicationTable: React.FC<ApplicationTableProps> = ({
             <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">
               Status
             </th>
+
             {showAgent && (
               <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">
                 Agent
               </th>
             )}
+
             <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase text-right">
               Action
             </th>
@@ -76,7 +78,8 @@ export const ApplicationTable: React.FC<ApplicationTableProps> = ({
 
               {showAgent && (
                 <td className="px-6 py-4 text-sm text-gray-600">
-                  {app.agent?.full_name ?? 'Unassigned'}
+                  {/* ✅ Backend-aligned field */}
+                  {app.agent?.name ?? 'Unassigned'}
                 </td>
               )}
 

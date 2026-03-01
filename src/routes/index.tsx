@@ -4,59 +4,64 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { RoleRoute } from './RoleRoute';
 import { Loader } from '@/components/ui/Loader';
 
-// 🔓 Public Pages
-const Login = lazy(() =>
-  import('@/pages/auth/Login').then((m) => ({ default: m.Login }))
-);
+/* =========================
+   Public Pages
+========================= */
 
-const VerifyOTP = lazy(() =>
-  import('@/pages/auth/VerifyOTP').then((m) => ({ default: m.VerifyOTP }))
-);
+const Login = lazy(() => import('@/pages/auth/Login'));
+const VerifyOTP = lazy(() => import('@/pages/auth/VerifyOTP'));
 
-// 👑 Admin Pages
-const AdminDashboard = lazy(() =>
-  import('@/pages/admin/Dashboard').then((m) => ({ default: m.AdminDashboard }))
-);
+/* =========================
+   Admin Pages
+========================= */
 
-const ControlTower = lazy(() =>
-  import('@/pages/admin/ControlTower').then((m) => ({ default: m.ControlTower }))
-);
+const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
+const ControlTower = lazy(() => import('@/pages/admin/ControlTower'));
 
-// 🛠️ Agent Pages
-const AgentDashboard = lazy(() =>
-  import('@/pages/agent/Dashboard').then((m) => ({ default: m.AgentDashboard }))
-);
+/* =========================
+   Agent Pages
+========================= */
 
-// 👤 Customer Pages
-const CustomerDashboard = lazy(() =>
-  import('@/pages/customer/Dashboard').then((m) => ({ default: m.CustomerDashboard }))
-);
+const AgentDashboard = lazy(() => import('@/pages/agent/Dashboard'));
 
-export const AppRoutes = () => {
+/* =========================
+   Customer Pages
+========================= */
+
+const CustomerDashboard = lazy(() => import('@/pages/customer/Dashboard'));
+
+export const AppRoutes: React.FC = () => {
   return (
     <Suspense fallback={<Loader fullScreen />}>
       <Routes>
-        {/* Public Routes */}
+        {/* ================= PUBLIC ================= */}
         <Route path="/login" element={<Login />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
 
-        {/* Protected Layer */}
-        <Route path="/" element={<ProtectedRoute />}>
-          {/* Admin */}
+        {/* ================= PROTECTED ================= */}
+        <Route element={<ProtectedRoute />}>
+
+          {/* ---------------- ADMIN ---------------- */}
           <Route
-            path="admin"
+            path="/admin"
             element={
               <RoleRoute allowedRoles={['admin']}>
                 <AdminDashboard />
               </RoleRoute>
             }
-          >
-            <Route path="control-tower" element={<ControlTower />} />
-          </Route>
-
-          {/* Agent */}
+          />
           <Route
-            path="agent"
+            path="/admin/control-tower"
+            element={
+              <RoleRoute allowedRoles={['admin']}>
+                <ControlTower />
+              </RoleRoute>
+            }
+          />
+
+          {/* ---------------- AGENT ---------------- */}
+          <Route
+            path="/agent"
             element={
               <RoleRoute allowedRoles={['agent']}>
                 <AgentDashboard />
@@ -64,9 +69,9 @@ export const AppRoutes = () => {
             }
           />
 
-          {/* Customer */}
+          {/* ---------------- CUSTOMER ---------------- */}
           <Route
-            path="customer"
+            path="/customer"
             element={
               <RoleRoute allowedRoles={['customer']}>
                 <CustomerDashboard />
@@ -75,7 +80,7 @@ export const AppRoutes = () => {
           />
         </Route>
 
-        {/* Fallback */}
+        {/* ================= FALLBACK ================= */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Suspense>
