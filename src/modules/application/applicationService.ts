@@ -16,9 +16,9 @@ export const applicationService = {
 
   // Customer: View their own history
   getCustomerApplications: async (): Promise<Application[]> => {
-    const response = await apiClient.get('/applications/my-requests');
-    return response.data;
-  },
+  const response = await apiClient.get('/applications/me');
+  return response.data;
+},
 
   // Agent: View assigned work
   getAgentWorkload: async (): Promise<Application[]> => {
