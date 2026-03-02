@@ -16,31 +16,26 @@ export const applicationService = {
     formData.append('govtFee', String(data.govtFee));
     formData.append('mode', data.mode);
 
-    if (data.customerLat)
+    if (data.customerLat !== undefined) {
       formData.append('customerLat', String(data.customerLat));
+    }
 
-    if (data.customerLng)
+    if (data.customerLng !== undefined) {
       formData.append('customerLng', String(data.customerLng));
+    }
 
-    if (data.deliveryAddress)
+    if (data.deliveryAddress) {
       formData.append('deliveryAddress', data.deliveryAddress);
+    }
 
-    // 🔥 IMPORTANT — documents must match backend field name
+    // 🔥 IMPORTANT — field name MUST match multer config
     data.documents.forEach((file: File) => {
       formData.append('documents', file);
     });
 
-    const response = await apiClient.post(
-      '/applications',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
+    // 🚫 DO NOT manually set Content-Type
+    const response = await apiClient.post('/applications', formData);
 
-    // Backend wraps inside ApiResponse.success(...)
     return response.data.data;
   },
 
