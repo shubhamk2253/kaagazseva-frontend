@@ -3,25 +3,43 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { applicationService } from '../../modules/application/applicationService';
+import apiClient from '../../config/apiClient';
 
 const ApplyService: React.FC = () => {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    service_type: '',
-    pincode: '',
-    documents: [] as string[],
-  });
+  const [serviceType, setServiceType] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
+    if (!serviceType || !pincode) return;
+
     setLoading(true);
+
     try {
-      await applicationService.create(formData);
-      navigate('/customer/applications');
+      const formData = new FormData();
+
+      formData.append('serviceType', serviceType);
+      formData.append('pincode', pincode);
+
+      files.forEach((file) => {
+        formData.append('documents', file);
+      });
+
+      await apiClient.post('/applications', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      navigate('/customer');
+
     } catch (err) {
-      alert('Failed to submit application');
+      console.error(err);
+      alert('Upload failed');
     } finally {
       setLoading(false);
     }
@@ -29,7 +47,7 @@ const ApplyService: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto py-8">
-      {/* STEP PROGRESS BAR */}
+
       <div className="flex justify-between mb-8 px-4">
         {[1, 2, 3].map((s) => (
           <div
@@ -52,26 +70,17 @@ const ApplyService: React.FC = () => {
       >
         {/* STEP 1 */}
         {step === 1 && (
-          <div className="grid grid-cols-1 gap-3">
-            {[
-              'Aadhaar Update',
-              'PAN Card',
-              'Voter ID',
-              'Income Certificate',
-            ].map((service) => (
+          <div className="grid gap-3">
+            {['Aadhaar Update', 'PAN Card', 'Voter ID'].map((s) => (
               <button
-                key={service}
+                key={s}
                 onClick={() => {
-                  setFormData({ ...formData, service_type: service });
+                  setServiceType(s);
                   setStep(2);
                 }}
-                className={`p-4 border rounded-xl text-left hover:border-blue-500 transition-all ${
-                  formData.service_type === service
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-slate-200'
-                }`}
+                className="p-4 border rounded-xl hover:border-blue-500"
               >
-                {service}
+                {s}
               </button>
             ))}
           </div>
@@ -82,15 +91,11 @@ const ApplyService: React.FC = () => {
           <div className="space-y-4">
             <Input
               label="Service Area Pincode"
-              placeholder="400001"
-              value={formData.pincode}
-              onChange={(e) =>
-                setFormData({ ...formData, pincode: e.target.value })
-              }
+              value={pincode}
+              onChange={(e) => setPincode(e.target.value)}
             />
-
             <Button fullWidth onClick={() => setStep(3)}>
-              Next: Documents
+              Next
             </Button>
           </div>
         )}
@@ -98,35 +103,21 @@ const ApplyService: React.FC = () => {
         {/* STEP 3 */}
         {step === 3 && (
           <div className="space-y-4">
-            <div className="border-2 border-dashed border-slate-300 rounded-xl p-10 text-center">
-              <p className="text-slate-500 mb-4">
-                Click to upload photos of original documents
-              </p>
-
-              <input type="file" className="hidden" id="file-up" />
-
-              <label
-                htmlFor="file-up"
-                className="cursor-pointer text-blue-600 font-bold"
-              >
-                Select Files
-              </label>
-            </div>
+            <input
+              type="file"
+              multiple
+              onChange={(e) => {
+                if (!e.target.files) return;
+                setFiles(Array.from(e.target.files));
+              }}
+            />
 
             <div className="flex gap-4">
-              <Button
-                variant="outline"
-                fullWidth
-                onClick={() => setStep(2)}
-              >
+              <Button variant="outline" fullWidth onClick={() => setStep(2)}>
                 Back
               </Button>
 
-              <Button
-                fullWidth
-                isLoading={loading}
-                onClick={handleSubmit}
-              >
+              <Button fullWidth isLoading={loading} onClick={handleSubmit}>
                 Submit Application
               </Button>
             </div>
