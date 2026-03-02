@@ -1,104 +1,136 @@
 import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import { ShieldCheck, Globe, Zap, ArrowRight } from 'lucide-react';
 
 const PublicLayout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-[#FAFBFF] flex flex-col">
-
-      {/* ================= HEADER ================= */}
-      <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-[#FAFBFF] flex flex-col selection:bg-blue-600 selection:text-white">
+      
+      {/* ================= PREMIUM GLASS HEADER ================= */}
+      <header className="h-20 bg-white/70 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-[100] transition-all">
         <div className="max-w-7xl mx-auto h-full px-8 flex items-center justify-between">
 
-          {/* LEFT: Brand Identity */}
-          <Link to="/" className="leading-tight group">
-            <p className="text-xl font-black text-slate-900 tracking-tight">
-              KAAGAZ<span className="text-blue-700">SEVA</span>
-            </p>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-bold group-hover:text-blue-600 transition-colors">
-              National Digital Infrastructure
+          {/* LEFT: Brand Identity with Micro-Interactions */}
+          <Link to="/" className="group flex flex-col items-start leading-none">
+            <div className="flex items-center gap-2">
+              <p className="text-2xl font-[950] text-slate-900 tracking-tighter transition-colors group-hover:text-blue-700">
+                KAAGAZ<span className="text-blue-700 group-hover:text-slate-900 transition-colors">SEVA</span>
+              </p>
+              <div className="h-5 w-[1px] bg-slate-200 rotate-[20deg] hidden sm:block" />
+              <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 border border-blue-100">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                <span className="text-[10px] font-black text-blue-700 uppercase tracking-wider">v2.0 Live</span>
+              </div>
+            </div>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-bold mt-1.5">
+              National Digital Service Network
             </p>
           </Link>
 
-          {/* CENTER: Minimal Nav (Institutional Feel) */}
-          <nav className="hidden md:flex items-center gap-10 text-sm font-semibold text-slate-600">
-            <a href="#services" className="hover:text-blue-700 transition-colors">
-              Services
+          {/* CENTER: Elite Navigation */}
+          <nav className="hidden lg:flex items-center gap-10 text-[13px] font-bold text-slate-500 uppercase tracking-widest">
+            <a href="#infra" className="hover:text-blue-700 transition-all flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5" /> Infrastructure
             </a>
-            <a href="#how-it-works" className="hover:text-blue-700 transition-colors">
-              How It Works
-            </a>
-            <a href="#agents" className="hover:text-blue-700 transition-colors">
-              For Agents
-            </a>
+            <a href="#services" className="hover:text-blue-700 transition-all">Network</a>
+            <a href="#trust" className="hover:text-blue-700 transition-all">Transparency</a>
           </nav>
 
-          {/* RIGHT: CTAs */}
-          <div className="flex items-center gap-4">
-
-            <Link to="/login">
-              <Button
-                variant="outline"
-                className="h-12 px-6 rounded-2xl border-slate-300 text-slate-700 font-semibold hover:border-blue-700 hover:text-blue-700 transition-all duration-300"
-              >
-                Become an Agent
-              </Button>
+          {/* RIGHT: Action Hub */}
+          <div className="flex items-center gap-6">
+            <Link to="/login" className="hidden md:block text-sm font-bold text-slate-600 hover:text-blue-700 transition-colors">
+              Agent Portal
             </Link>
-
+            
             <Link to="/login">
               <Button
-                className="h-12 px-8 rounded-2xl bg-blue-700 hover:bg-blue-800 text-white font-semibold shadow-lg shadow-blue-200 transition-all duration-300"
+                className="group h-12 px-8 rounded-full bg-slate-900 hover:bg-blue-700 text-white font-bold text-sm shadow-xl shadow-blue-100 transition-all active:scale-95 flex items-center gap-2"
               >
                 Apply Now
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-
           </div>
         </div>
       </header>
 
       {/* ================= PAGE CONTENT ================= */}
-      <main className="flex-1">
+      <main className="flex-1 relative">
+        {/* Subtle Global Background Pattern */}
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.02] pointer-events-none" />
         <Outlet />
       </main>
 
-      {/* ================= FOOTER ================= */}
-      <footer className="border-t border-slate-200 py-16 bg-white mt-24">
-        <div className="max-w-7xl mx-auto px-8 grid md:grid-cols-3 gap-12 text-sm text-slate-600">
+      {/* ================= CORPORATE FOOTER ================= */}
+      <footer className="bg-white border-t border-slate-200 pt-24 pb-12 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-16 mb-20">
+            
+            {/* Mission Statement (Col 1-5) */}
+            <div className="md:col-span-5">
+              <p className="text-2xl font-black text-slate-900 mb-6">KAAGAZSEVA</p>
+              <p className="text-base text-slate-500 leading-relaxed max-w-sm">
+                Architecting the future of assisted government services. 
+                We combine <span className="text-slate-900 font-semibold">financial integrity</span> with 
+                <span className="text-slate-900 font-semibold"> high-speed digital delivery</span>.
+              </p>
+              
+              <div className="mt-8 flex gap-4">
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 group hover:border-blue-200 transition-colors">
+                  <ShieldCheck className="w-6 h-6 text-slate-400 group-hover:text-blue-600" />
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 group hover:border-blue-200 transition-colors">
+                  <Zap className="w-6 h-6 text-slate-400 group-hover:text-blue-600" />
+                </div>
+              </div>
+            </div>
 
-          {/* Brand Column */}
-          <div>
-            <p className="text-lg font-black text-slate-900 tracking-tight mb-3">
-              KAAGAZ<span className="text-blue-700">SEVA</span>
+            {/* Links (Col 6-12) */}
+            <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+              <div className="space-y-4">
+                <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Ecosystem</h4>
+                <ul className="space-y-3 text-[14px] font-bold text-slate-600">
+                  <li className="hover:text-blue-700 cursor-pointer transition-colors">Agent Network</li>
+                  <li className="hover:text-blue-700 cursor-pointer transition-colors">Service API</li>
+                  <li className="hover:text-blue-700 cursor-pointer transition-colors">Marketplace</li>
+                </ul>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Governance</h4>
+                <ul className="space-y-3 text-[14px] font-bold text-slate-600">
+                  <li className="hover:text-blue-700 cursor-pointer transition-colors">Escrow Policy</li>
+                  <li className="hover:text-blue-700 cursor-pointer transition-colors">Privacy Stack</li>
+                  <li className="hover:text-blue-700 cursor-pointer transition-colors">Audit Logs</li>
+                </ul>
+              </div>
+
+              <div className="space-y-4 col-span-2 sm:col-span-1">
+                <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">System Status</h4>
+                <div className="p-4 rounded-2xl bg-green-50/50 border border-green-100">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[11px] font-black text-green-700 uppercase">Operational</span>
+                  </div>
+                  <p className="text-[10px] text-green-600 font-medium">99.98% Network Uptime</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Bar: Pure Minimalist */}
+          <div className="pt-10 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+              © {new Date().getFullYear()} KaagazSeva Technologies Pvt Ltd.
             </p>
-            <p className="text-slate-500 leading-relaxed">
-              India’s structured digital backbone for assisted government services.
-              Secure. Transparent. Accountable.
-            </p>
+            <div className="flex gap-8">
+               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">India Stack Integrated</span>
+               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">AES-256 Encrypted</span>
+            </div>
           </div>
-
-          {/* Links */}
-          <div className="space-y-2">
-            <p className="font-bold text-slate-900 mb-2">Platform</p>
-            <p className="hover:text-blue-700 cursor-pointer transition-colors">Apply for Service</p>
-            <p className="hover:text-blue-700 cursor-pointer transition-colors">Agent Registration</p>
-            <p className="hover:text-blue-700 cursor-pointer transition-colors">Support</p>
-          </div>
-
-          {/* Legal */}
-          <div className="space-y-2">
-            <p className="font-bold text-slate-900 mb-2">Legal</p>
-            <p className="hover:text-blue-700 cursor-pointer transition-colors">Privacy Policy</p>
-            <p className="hover:text-blue-700 cursor-pointer transition-colors">Terms of Service</p>
-          </div>
-
-        </div>
-
-        <div className="text-center text-xs text-slate-400 mt-12 border-t border-slate-100 pt-6">
-          © {new Date().getFullYear()} KaagazSeva. Structured National Platform for Assisted Government Services.
         </div>
       </footer>
-
     </div>
   );
 };
