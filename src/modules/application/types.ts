@@ -1,52 +1,86 @@
 import type { User } from '../auth/types';
 
-export type ApplicationStatus =
-  | 'pending'
-  | 'in_progress'
-  | 'completed'
-  | 'rejected';
+/* ===================================
+   ENUMS (Aligned with Prisma)
+=================================== */
 
-/* ===============================
-   Core Application Model
-================================= */
+export type ApplicationStatus =
+  | 'DRAFT'
+  | 'PENDING_PAYMENT'
+  | 'SUBMITTED'
+  | 'ASSIGNED'
+  | 'UNDER_REVIEW'
+  | 'DOCUMENT_REQUIRED'
+  | 'COMPLETED'
+  | 'REJECTED'
+  | 'CANCELLED';
+
+export type ServiceMode = 'DIGITAL' | 'DOORSTEP';
+
+/* ===================================
+   Core Application Model (Backend Aligned)
+=================================== */
 
 export interface Application {
   id: string;
-  service_type: string;
+
+  serviceType: string;
+  state: string;
+  district: string;
+  mode: ServiceMode;
   status: ApplicationStatus;
-  customer_id: string;
-  agent_id?: string;
-  pincode: string;
-  documents: string[]; // S3 URLs
-  created_at: string;
-  updated_at: string;
+
+  govtFee: number;
+  serviceFee: number;
+  platformCommission: number;
+  agentCommission: number;
+  deliveryFee: number;
+  totalAmount: number;
+
+  documents: Record<string, any>;
+
+  createdAt: string;
+  updatedAt: string;
+
   customer?: User;
   agent?: User;
 }
 
+/* ===================================
+   CREATE DTO (🔥 IMPORTANT)
+=================================== */
+
 export interface CreateApplicationDTO {
-  service_type: string;
-  pincode: string;
-  documents: string[];
+  serviceType: string;
+  state: string;
+  district: string;
+  govtFee: number;
+  mode: ServiceMode;
+
+  customerLat?: number;
+  customerLng?: number;
+  deliveryAddress?: string;
+
+  documents: File[];   // MUST be File[]
 }
 
-/* ===============================
+/* ===================================
    Agent Dashboard Summary
-================================= */
+=================================== */
 
 export interface AgentDashboardStats {
-  pending_tasks: number;
-  completed_today: number;
+  pendingTasks: number;
+  completedToday: number;
 
-  performance_data: {
+  performanceData: {
     name: string;
     received: number;
     completed: number;
   }[];
 
-  recent_apps: {
+  recentApps: {
     id: string;
-    service_type: string;
+    serviceType: string;
     status: ApplicationStatus;
   }[];
 }

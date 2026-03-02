@@ -7,15 +7,23 @@ import apiClient from '../../config/apiClient';
 
 const ApplyService: React.FC = () => {
   const [step, setStep] = useState(1);
+
   const [serviceType, setServiceType] = useState('');
-  const [pincode, setPincode] = useState('');
+  const [stateName, setStateName] = useState('');
+  const [district, setDistrict] = useState('');
+  const [govtFee, setGovtFee] = useState('');
+  const [mode, setMode] = useState<'DIGITAL' | 'DOORSTEP'>('DIGITAL');
+
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
-    if (!serviceType || !pincode) return;
+    if (!serviceType || !stateName || !district || !govtFee || files.length === 0) {
+      alert('Please fill all required fields');
+      return;
+    }
 
     setLoading(true);
 
@@ -23,17 +31,16 @@ const ApplyService: React.FC = () => {
       const formData = new FormData();
 
       formData.append('serviceType', serviceType);
-      formData.append('pincode', pincode);
+      formData.append('state', stateName);
+      formData.append('district', district);
+      formData.append('govtFee', govtFee);
+      formData.append('mode', mode);
 
       files.forEach((file) => {
         formData.append('documents', file);
       });
 
-      await apiClient.post('/applications', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await apiClient.post('/applications', formData);
 
       navigate('/customer');
 
@@ -47,82 +54,58 @@ const ApplyService: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto py-8">
+      <Card title="Apply for Service">
 
-      <div className="flex justify-between mb-8 px-4">
-        {[1, 2, 3].map((s) => (
-          <div
-            key={s}
-            className={`h-2 w-full mx-1 rounded-full ${
-              step >= s ? 'bg-blue-600' : 'bg-slate-200'
-            }`}
+        <div className="space-y-4">
+
+          <Input
+            label="Service Type"
+            value={serviceType}
+            onChange={(e) => setServiceType(e.target.value)}
           />
-        ))}
-      </div>
 
-      <Card
-        title={
-          step === 1
-            ? 'Select Service'
-            : step === 2
-            ? 'Basic Details'
-            : 'Upload Documents'
-        }
-      >
-        {/* STEP 1 */}
-        {step === 1 && (
-          <div className="grid gap-3">
-            {['Aadhaar Update', 'PAN Card', 'Voter ID'].map((s) => (
-              <button
-                key={s}
-                onClick={() => {
-                  setServiceType(s);
-                  setStep(2);
-                }}
-                className="p-4 border rounded-xl hover:border-blue-500"
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        )}
+          <Input
+            label="State"
+            value={stateName}
+            onChange={(e) => setStateName(e.target.value)}
+          />
 
-        {/* STEP 2 */}
-        {step === 2 && (
-          <div className="space-y-4">
-            <Input
-              label="Service Area Pincode"
-              value={pincode}
-              onChange={(e) => setPincode(e.target.value)}
-            />
-            <Button fullWidth onClick={() => setStep(3)}>
-              Next
-            </Button>
-          </div>
-        )}
+          <Input
+            label="District"
+            value={district}
+            onChange={(e) => setDistrict(e.target.value)}
+          />
 
-        {/* STEP 3 */}
-        {step === 3 && (
-          <div className="space-y-4">
-            <input
-              type="file"
-              multiple
-              onChange={(e) => {
-                if (!e.target.files) return;
-                setFiles(Array.from(e.target.files));
-              }}
-            />
+          <Input
+            label="Government Fee"
+            type="number"
+            value={govtFee}
+            onChange={(e) => setGovtFee(e.target.value)}
+          />
 
-            <div className="flex gap-4">
-              <Button variant="outline" fullWidth onClick={() => setStep(2)}>
-                Back
-              </Button>
+          <select
+            className="border rounded p-2 w-full"
+            value={mode}
+            onChange={(e) => setMode(e.target.value as any)}
+          >
+            <option value="DIGITAL">Digital</option>
+            <option value="DOORSTEP">Doorstep</option>
+          </select>
 
-              <Button fullWidth isLoading={loading} onClick={handleSubmit}>
-                Submit Application
-              </Button>
-            </div>
-          </div>
-        )}
+          <input
+            type="file"
+            multiple
+            onChange={(e) => {
+              if (!e.target.files) return;
+              setFiles(Array.from(e.target.files));
+            }}
+          />
+
+          <Button fullWidth isLoading={loading} onClick={handleSubmit}>
+            Submit Application
+          </Button>
+
+        </div>
       </Card>
     </div>
   );
