@@ -28,7 +28,7 @@ const ControlTower: React.FC = () => {
       color: 'bg-red-500',
     },
     {
-      label: 'Completed',
+      label: 'COMPLETED',
       count: towerData?.completed || 0,
       color: 'bg-emerald-500',
     },

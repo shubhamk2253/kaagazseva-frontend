@@ -41,7 +41,7 @@ export const AdminTickets: React.FC = () => {
                 <td className="px-6 py-4 font-mono text-xs text-slate-500">#{ticket.id.slice(0,8)}</td>
                 <td className="px-6 py-4">
                   <p className="font-bold text-slate-900 text-sm">{ticket.subject}</p>
-                  <p className="text-xs text-slate-400">{formatDate(ticket.created_at)}</p>
+                  <p className="text-xs text-slate-400">{formatDate(ticket.createdAt)}</p>
                 </td>
                 <td className="px-6 py-4 capitalize text-sm">{ticket.user_role}</td>
                 <td className="px-6 py-4">

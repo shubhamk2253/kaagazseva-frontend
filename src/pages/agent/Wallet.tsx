@@ -65,7 +65,7 @@ export const AgentWallet: React.FC = () => {
                 Reference ID: {tx.reference_id}
               </p>
               <p className="text-xs text-slate-500">
-                {new Date(tx.created_at).toLocaleDateString()}
+                {new Date(tx.createdAt).toLocaleDateString()}
               </p>
             </div>
 

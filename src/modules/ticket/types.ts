@@ -1,11 +1,11 @@
-export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+export type TicketStatus = 'open' | 'UNDER_REVIEW' | 'resolved' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface TicketMessage {
   id: string;
   sender_id: string;
   message: string;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface Ticket {
@@ -18,8 +18,8 @@ export interface Ticket {
   user_id: string;
   related_id?: string; // Link to a specific Application or Transaction
   messages: TicketMessage[];
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateTicketDTO {

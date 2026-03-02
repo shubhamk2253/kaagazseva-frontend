@@ -29,7 +29,7 @@ const AgentDashboard: React.FC = () => {
   const pendingTasks = useMemo(
     () =>
       safeWorkload.filter(
-        (app) => app.status === 'pending'
+        (app) => app.status === 'PENDING_PAYMENT'
       ).length,
     [safeWorkload]
   );
@@ -38,9 +38,9 @@ const AgentDashboard: React.FC = () => {
     const today = new Date().toDateString();
 
     return safeWorkload.filter((app) => {
-      if (app.status !== 'completed') return false;
+      if (app.status !== 'COMPLETED') return false;
       return (
-        new Date(app.updated_at).toDateString() === today
+        new Date(app.updatedAt).toDateString() === today
       );
     }).length;
   }, [safeWorkload]);
@@ -52,7 +52,7 @@ const AgentDashboard: React.FC = () => {
     > = {};
 
     safeWorkload.forEach((app) => {
-      const service = app.service_type;
+      const service = app.serviceType;
 
       if (!map[service]) {
         map[service] = {
@@ -64,7 +64,7 @@ const AgentDashboard: React.FC = () => {
 
       map[service].received += 1;
 
-      if (app.status === 'completed') {
+      if (app.status === 'COMPLETED') {
         map[service].completed += 1;
       }
     });
@@ -158,14 +158,14 @@ const AgentDashboard: React.FC = () => {
                 className="flex justify-between items-center px-5 py-4 border border-slate-200 rounded-2xl hover:bg-slate-50 transition-colors"
               >
                 <span className="font-semibold text-sm text-slate-800">
-                  {app.service_type}
+                  {app.serviceType}
                 </span>
 
                 <span
                   className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide ${
-                    app.status === 'completed'
+                    app.status === 'COMPLETED'
                       ? 'bg-emerald-100 text-emerald-700'
-                      : app.status === 'pending'
+                      : app.status === 'PENDING_PAYMENT'
                       ? 'bg-amber-100 text-amber-700'
                       : 'bg-blue-100 text-blue-700'
                   }`}

@@ -55,19 +55,19 @@ export const ApplicationTable: React.FC<ApplicationTableProps> = ({
               className="hover:bg-blue-50/30 transition-colors"
             >
               <td className="px-6 py-4 font-medium text-gray-800">
-                {app.service_type}
+                {app.serviceType}
               </td>
 
               <td className="px-6 py-4 text-sm text-gray-600">
-                {formatDate(app.created_at)}
+                {formatDate(app.createdAt)}
               </td>
 
               <td className="px-6 py-4">
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    app.status === 'completed'
+                    app.status === 'COMPLETED'
                       ? 'bg-green-100 text-green-700'
-                      : app.status === 'in_progress'
+                      : app.status === 'UNDER_REVIEW'
                       ? 'bg-blue-100 text-blue-700'
                       : 'bg-yellow-100 text-yellow-700'
                   }`}

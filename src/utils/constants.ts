@@ -5,10 +5,10 @@ export const APP_CONFIG = {
 };
 
 export const APPLICATION_STATUS = {
-  PENDING: 'pending',
-  IN_PROGRESS: 'in_progress',
-  COMPLETED: 'completed',
-  REJECTED: 'rejected',
+  PENDING: 'PENDING_PAYMENT',
+  IN_PROGRESS: 'UNDER_REVIEW',
+  COMPLETED: 'COMPLETED',
+  REJECTED: 'REJECTED',
 } as const;
 
 export const ROLES = {

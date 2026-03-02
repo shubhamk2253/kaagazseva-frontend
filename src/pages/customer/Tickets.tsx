@@ -22,7 +22,7 @@ export const CustomerTickets: React.FC = () => {
             <div className="flex justify-between items-center">
               <div>
                 <h4 className="font-bold text-slate-900">{ticket.subject}</h4>
-                <p className="text-xs text-slate-500">Raised on {formatDate(ticket.created_at)}</p>
+                <p className="text-xs text-slate-500">Raised on {formatDate(ticket.createdAt)}</p>
               </div>
               <span className="px-3 py-1 bg-slate-100 rounded-full text-xs font-bold uppercase">{ticket.status}</span>
             </div>

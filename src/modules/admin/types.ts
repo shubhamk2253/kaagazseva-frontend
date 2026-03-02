@@ -68,5 +68,5 @@ export interface AdminTicket {
   user_name: string;
   subject: string;
   status: string;
-  created_at: string;
+  createdAt: string;
 }

@@ -25,8 +25,8 @@ const CustomerDashboard: React.FC = () => {
     () =>
       allApps.filter(
         (a) =>
-          a.status !== 'completed' &&
-          a.status !== 'rejected'
+          a.status !== 'COMPLETED' &&
+          a.status !== 'REJECTED'
       ),
     [allApps]
   );
@@ -34,7 +34,7 @@ const CustomerDashboard: React.FC = () => {
   const completedCount = useMemo(
     () =>
       allApps.filter(
-        (a) => a.status === 'completed'
+        (a) => a.status === 'COMPLETED'
       ).length,
     [allApps]
   );

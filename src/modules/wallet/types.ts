@@ -1,5 +1,5 @@
 export type TransactionType = 'credit' | 'debit' | 'payout' | 'refund';
-export type TransactionStatus = 'pending' | 'success' | 'failed';
+export type TransactionStatus = 'PENDING_PAYMENT' | 'success' | 'failed';
 
 export interface Transaction {
   id: string;
@@ -8,7 +8,7 @@ export interface Transaction {
   status: TransactionStatus;
   description: string;
   reference_id?: string; // Links to an Application ID
-  created_at: string;
+  createdAt: string;
 }
 
 export interface Wallet {
