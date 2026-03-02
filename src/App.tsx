@@ -9,7 +9,7 @@ import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { ProtectedRoute } from '@/routes/ProtectedRoute';
 import { RoleRoute } from '@/routes/RoleRoute';
 
-import { PublicLayout } from '@/layout/PublicLayout';
+import PublicLayout from '@/layout/PublicLayout';
 import { DashboardLayout } from '@/layout/DashboardLayout';
 
 /* =========================

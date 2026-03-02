@@ -8,24 +8,17 @@ interface RoleRouteProps {
   allowedRoles: UserRole[];
 }
 
-/**
- * ROLE ROUTE
- * Prevents unauthorized role access to protected sections.
- */
 export const RoleRoute: React.FC<RoleRouteProps> = ({
   children,
   allowedRoles,
 }) => {
-  const role = useAuthStore((state) => state.role);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { role, isAuthenticated } = useAuthStore();
 
-  // Safety: Not logged in
-  if (!isAuthenticated || !role) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // Check role access
-  const hasAccess = allowedRoles.includes(role);
+  const hasAccess = role && allowedRoles.includes(role);
 
   if (!hasAccess) {
     const fallbackMap: Record<UserRole, string> = {
@@ -34,7 +27,7 @@ export const RoleRoute: React.FC<RoleRouteProps> = ({
       customer: '/customer',
     };
 
-    return <Navigate to={fallbackMap[role]} replace />;
+    return <Navigate to={role ? fallbackMap[role] : '/login'} replace />;
   }
 
   return <>{children}</>;
