@@ -9,6 +9,17 @@ interface LocationState {
   mobile?: string;
 }
 
+interface VerifyResponse {
+  accessToken: string;
+  user: {
+    id: string;
+    phoneNumber: string;
+    name?: string;
+    role: 'admin' | 'agent' | 'customer';
+    createdAt: string;
+  };
+}
+
 const VerifyOTP: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -20,7 +31,7 @@ const VerifyOTP: React.FC = () => {
 
   const { request, loading, error } =
     useApi<
-      { user: { role: 'admin' | 'agent' | 'customer' } },
+      VerifyResponse,
       [{ mobile: string; otp: string }]
     >(authService.verifyOtp);
 
@@ -32,7 +43,7 @@ const VerifyOTP: React.FC = () => {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mobile || otp.length < 4) return;
+    if (!mobile || otp.length !== 6) return;
 
     try {
       const response = await request({ mobile, otp });
@@ -43,7 +54,7 @@ const VerifyOTP: React.FC = () => {
         customer: '/customer',
       };
 
-      navigate(rolePaths[response.user.role] || '/customer', {
+      navigate(rolePaths[response.user.role], {
         replace: true,
       });
     } catch (err) {
@@ -66,7 +77,7 @@ const VerifyOTP: React.FC = () => {
         </h2>
 
         <p className="text-slate-500 mt-2">
-          We&apos;ve sent a code to{' '}
+          We've sent a code to{' '}
           <span className="font-bold text-slate-900">
             +91 {mobile ?? ''}
           </span>
@@ -80,7 +91,9 @@ const VerifyOTP: React.FC = () => {
           placeholder="000000"
           maxLength={6}
           value={otp}
-          onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+          onChange={(e) =>
+            setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
+          }
           error={error ?? undefined}
           disabled={loading}
           className="text-center text-2xl tracking-[0.5em] font-mono font-bold"
@@ -90,7 +103,7 @@ const VerifyOTP: React.FC = () => {
         <Button
           fullWidth
           isLoading={loading}
-          disabled={otp.length < 4 || loading}
+          disabled={otp.length !== 6 || loading}
         >
           Verify & Log In
         </Button>
@@ -98,7 +111,7 @@ const VerifyOTP: React.FC = () => {
 
       <div className="mt-8 text-center pt-6 border-t border-slate-50">
         <p className="text-sm text-slate-500">
-          Didn&apos;t receive the code?{' '}
+          Didn’t receive the code?{' '}
           <button
             type="button"
             className="text-blue-600 font-bold hover:text-blue-700 transition-colors"

@@ -8,26 +8,45 @@ import type {
 } from './types';
 
 /**
- * KAAGAZSEVA - Authentication Service
- * Fully aligned with Node backend structure
+ * KAAGAZSEVA - Authentication Service (OTP Based)
+ * Backend Route: /api/v1/otp/*
  */
+
 export const authService = {
+  /* ======================================================
+     📲 REQUEST OTP
+     POST /otp/send
+  ====================================================== */
   async requestOtp(data: LoginDTO): Promise<{ message: string }> {
-    const response = await apiClient.post('/auth/login', data);
-    return response.data;
-  },
+    const response = await apiClient.post('/otp/send', data);
 
-  async verifyOtp(data: VerifyOTPDTO): Promise<AuthResponse> {
-    const response = await apiClient.post('/auth/verify-otp', data);
-
-    // Backend wraps inside { data: {...} }
-    const backendData = response.data?.data;
-
-    if (!backendData?.accessToken || !backendData?.user) {
-      throw new Error('Invalid authentication response from server');
+    if (!response.data?.success) {
+      throw new Error(response.data?.message || 'Failed to send OTP');
     }
 
-    // Normalize role to lowercase
+    return {
+      message: response.data.message,
+    };
+  },
+
+  /* ======================================================
+     🔐 VERIFY OTP + LOGIN
+     POST /otp/verify
+  ====================================================== */
+  async verifyOtp(data: VerifyOTPDTO): Promise<AuthResponse> {
+    const response = await apiClient.post('/otp/verify', data);
+
+    if (!response.data?.success || !response.data?.data) {
+      throw new Error(response.data?.message || 'OTP verification failed');
+    }
+
+    const backendData = response.data.data;
+
+    if (!backendData.accessToken || !backendData.user) {
+      throw new Error('Invalid authentication response');
+    }
+
+    // Normalize role to lowercase for frontend routing
     const normalizedRole =
       backendData.user.role.toLowerCase() as UserRole;
 
@@ -42,7 +61,7 @@ export const authService = {
       },
     };
 
-    // Sync Zustand store
+    // Save to Zustand
     useAuthStore.getState().setAuth(
       formattedResponse.user,
       formattedResponse.accessToken
@@ -51,11 +70,17 @@ export const authService = {
     return formattedResponse;
   },
 
+  /* ======================================================
+     🚪 LOGOUT
+  ====================================================== */
   logout(): void {
     useAuthStore.getState().logout();
     window.location.href = '/login';
   },
 
+  /* ======================================================
+     👤 GET CURRENT USER
+  ====================================================== */
   getCurrentUser() {
     return useAuthStore.getState().user;
   },
