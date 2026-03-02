@@ -20,25 +20,36 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "rounded-lg font-medium transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed";
+    "rounded-2xl font-semibold tracking-wide transition-all duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed";
 
   const sizeStyles: Record<Size, string> = {
-    sm: "px-3 py-1 text-sm",
-    md: "px-4 py-2 text-sm",
-    lg: "px-6 py-3 text-base",
+    sm: "px-4 py-2 text-sm",
+    md: "px-6 py-3 text-sm",
+    lg: "px-8 py-4 text-base",
   };
 
   const variants: Record<Variant, string> = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700",
-    secondary: "bg-gray-600 text-white hover:bg-gray-700",
-    outline: "border-2 border-blue-600 text-blue-600 hover:bg-blue-50",
-    danger: "bg-red-600 text-white hover:bg-red-700",
-    success: "bg-green-600 text-white hover:bg-green-700",
+    primary:
+      "bg-blue-700 text-white hover:bg-blue-800 shadow-lg shadow-blue-200",
+
+    secondary:
+      "bg-slate-700 text-white hover:bg-slate-800",
+
+    outline:
+      "border-2 border-blue-700 text-blue-700 hover:bg-blue-50",
+
+    danger:
+      "bg-red-600 text-white hover:bg-red-700",
+
+    success:
+      "bg-emerald-600 text-white hover:bg-emerald-700",
   };
 
   return (
     <button
-      className={`${baseStyles} ${sizeStyles[size]} ${variants[variant]} ${fullWidth ? 'w-full' : ''} ${className}`}
+      className={`${baseStyles} ${sizeStyles[size]} ${variants[variant]} ${
+        fullWidth ? 'w-full' : ''
+      } ${className}`}
       disabled={isLoading || props.disabled}
       {...props}
     >
