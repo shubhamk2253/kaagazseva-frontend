@@ -16,8 +16,8 @@ import { getErrorMessage } from './errorMapper';
  */
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
-  timeout: 10000,
+  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
