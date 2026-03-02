@@ -70,3 +70,7 @@ export const ApplyService: React.FC = () => {
     </div>
   );
 };
+const Apply = () => {
+  return <Apply/>;
+};
+export default Apply;

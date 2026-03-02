@@ -21,11 +21,15 @@ const Login = React.lazy(() => import('@/pages/auth/Login'));
 const VerifyOTP = React.lazy(() => import('@/pages/auth/VerifyOTP'));
 
 /* =========================
-   CUSTOMER
+   CUSTOMER PAGES
 ========================= */
 
 const CustomerDashboard = React.lazy(() =>
   import('@/pages/customer/Dashboard')
+);
+
+const Apply = React.lazy(() =>
+  import('@/pages/customer/Apply')
 );
 
 /* =========================
@@ -61,17 +65,18 @@ export const App: React.FC = () => {
         <Suspense fallback={<Loader fullScreen />}>
           <Routes>
 
-            {/* PUBLIC */}
+            {/* ================= PUBLIC ================= */}
             <Route element={<PublicLayout />}>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/verify-otp" element={<VerifyOTP />} />
             </Route>
 
-            {/* PROTECTED */}
+            {/* ================= PROTECTED ================= */}
             <Route element={<ProtectedRoute />}>
               <Route element={<DashboardLayout />}>
 
+                {/* ================= CUSTOMER ================= */}
                 <Route
                   path="/customer"
                   element={
@@ -82,6 +87,16 @@ export const App: React.FC = () => {
                 />
 
                 <Route
+                  path="/customer/apply"
+                  element={
+                    <RoleRoute allowedRoles={['customer']}>
+                      <Apply />
+                    </RoleRoute>
+                  }
+                />
+
+                {/* ================= AGENT ================= */}
+                <Route
                   path="/agent"
                   element={
                     <RoleRoute allowedRoles={['agent']}>
@@ -90,6 +105,7 @@ export const App: React.FC = () => {
                   }
                 />
 
+                {/* ================= ADMIN ================= */}
                 <Route
                   path="/admin"
                   element={
@@ -102,6 +118,7 @@ export const App: React.FC = () => {
               </Route>
             </Route>
 
+            {/* ================= FALLBACK ================= */}
             <Route path="*" element={<Navigate to="/" replace />} />
 
           </Routes>
