@@ -7,20 +7,33 @@ export const DashboardLayout: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Dynamic Sidebar */}
+    <div className="flex h-screen bg-[#F4F7FB] overflow-hidden">
+
+      {/* ================= SIDEBAR ================= */}
       <Sidebar isOpen={isSidebarOpen} />
 
+      {/* ================= MAIN WRAPPER ================= */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Navigation */}
+
+        {/* NAVBAR */}
         <Navbar toggleSidebar={() => setSidebarOpen(!isSidebarOpen)} />
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-7xl mx-auto">
-            <Outlet />
+        {/* ================= CONTENT AREA ================= */}
+        <main className="flex-1 overflow-y-auto">
+
+          <div className="max-w-7xl mx-auto px-8 py-10">
+
+            {/* Elevated Content Surface */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 min-h-[calc(100vh-160px)] p-10">
+
+              <Outlet />
+
+            </div>
+
           </div>
+
         </main>
+
       </div>
     </div>
   );

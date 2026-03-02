@@ -40,54 +40,90 @@ const CustomerDashboard: React.FC = () => {
   );
 
   return (
-    <div className="space-y-8">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-12">
+
+      {/* ================= PAGE HEADER ================= */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900">
-            Namaste!
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight">
+            Citizen Dashboard
           </h1>
-          <p className="text-slate-500">
-            Track your active document requests here.
+          <p className="text-slate-500 mt-2 text-base">
+            Monitor your service applications and track execution status.
           </p>
         </div>
 
         <Link to="/customer/apply">
-          <Button size="lg" className="shadow-lg shadow-blue-200">
-            New Application +
+          <Button
+            size="lg"
+            className="rounded-2xl px-10 bg-blue-700 hover:bg-blue-800 text-white shadow-lg shadow-blue-200"
+          >
+            Apply for New Service
           </Button>
         </Link>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-l-4 border-blue-600">
-          <p className="text-xs font-bold text-slate-400 uppercase">
-            Active Requests
-          </p>
-          <h3 className="text-2xl font-black text-slate-900">
-            {activeApps.length}
-          </h3>
-        </Card>
-
-        <Card className="border-l-4 border-green-600">
-          <p className="text-xs font-bold text-slate-400 uppercase">
-            Completed
-          </p>
-          <h3 className="text-2xl font-black text-slate-900">
-            {completedCount}
-          </h3>
-        </Card>
       </div>
 
+      {/* ================= KPI SECTION ================= */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <Card>
+          <div className="space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+              Active Requests
+            </p>
+            <h3 className="text-4xl font-black text-blue-700">
+              {activeApps.length}
+            </h3>
+            <p className="text-sm text-slate-500">
+              Currently under processing
+            </p>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+              Completed
+            </p>
+            <h3 className="text-4xl font-black text-emerald-600">
+              {completedCount}
+            </h3>
+            <p className="text-sm text-slate-500">
+              Successfully delivered services
+            </p>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+              Total Applications
+            </p>
+            <h3 className="text-4xl font-black text-slate-900">
+              {allApps.length}
+            </h3>
+            <p className="text-sm text-slate-500">
+              Lifetime submissions
+            </p>
+          </div>
+        </Card>
+
+      </div>
+
+      {/* ================= RECENT ACTIVITY ================= */}
       <Card title="Recent Activity">
         <ApplicationTable data={allApps.slice(0, 5)} />
 
-        <Link
-          to="/customer/applications"
-          className="block text-center mt-4 text-sm font-bold text-blue-600 hover:underline"
-        >
-          View All Applications
-        </Link>
+        <div className="mt-6 text-right">
+          <Link
+            to="/customer/applications"
+            className="text-sm font-semibold text-blue-700 hover:text-blue-900 transition-colors"
+          >
+            View All Applications →
+          </Link>
+        </div>
       </Card>
+
     </div>
   );
 };

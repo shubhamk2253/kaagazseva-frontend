@@ -9,19 +9,15 @@ import type { Application } from '@/modules/application/types';
 import type { Wallet } from '@/modules/wallet/types';
 
 const AgentDashboard: React.FC = () => {
-  const {
-    data: workload,
-    request: fetchWorkload,
-  } = useApi<Application[], []>(
-    applicationService.getAgentWorkload
-  );
+  const { data: workload, request: fetchWorkload } =
+    useApi<Application[], []>(
+      applicationService.getAgentWorkload
+    );
 
-  const {
-    data: wallet,
-    request: fetchWallet,
-  } = useApi<Wallet, []>(
-    walletService.getWalletData
-  );
+  const { data: wallet, request: fetchWallet } =
+    useApi<Wallet, []>(
+      walletService.getWalletData
+    );
 
   useEffect(() => {
     fetchWorkload();
@@ -79,62 +75,110 @@ const AgentDashboard: React.FC = () => {
   const recentApps = safeWorkload.slice(0, 5);
 
   return (
-    <div className="space-y-8">
-      <header>
-        <h1 className="text-3xl font-black text-slate-900">
-          Agent Command Center
+    <div className="space-y-12">
+
+      {/* ================= HEADER ================= */}
+      <div>
+        <h1 className="text-4xl font-black text-slate-900 tracking-tight">
+          Agent Operations Panel
         </h1>
-        <p className="text-slate-500">
-          Manage your active workload and track commissions.
+        <p className="text-slate-500 mt-2 text-base">
+          Monitor assignments, performance, and commission flow.
         </p>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-slate-900 text-white border-none">
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
-            Wallet Balance
-          </p>
-          <h3 className="text-3xl font-black mt-2">
-            {formatCurrency(wallet?.balance ?? 0)}
-          </h3>
-        </Card>
-
-        <Card title="Assigned Tasks">
-          <h3 className="text-3xl font-black text-blue-600">
-            {pendingTasks}
-          </h3>
-        </Card>
-
-        <Card title="Completed (Today)">
-          <h3 className="text-3xl font-black text-green-600">
-            {completedToday}
-          </h3>
-        </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card title="Service Efficiency">
+      {/* ================= KPI SECTION ================= */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        {/* Wallet */}
+        <Card>
+          <div className="space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+              Wallet Balance
+            </p>
+            <h3 className="text-4xl font-black text-blue-700">
+              {formatCurrency(wallet?.balance ?? 0)}
+            </h3>
+            <p className="text-sm text-slate-500">
+              Available for withdrawal
+            </p>
+          </div>
+        </Card>
+
+        {/* Pending */}
+        <Card>
+          <div className="space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+              Assigned Tasks
+            </p>
+            <h3 className="text-4xl font-black text-amber-600">
+              {pendingTasks}
+            </h3>
+            <p className="text-sm text-slate-500">
+              Awaiting execution
+            </p>
+          </div>
+        </Card>
+
+        {/* Completed Today */}
+        <Card>
+          <div className="space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+              Completed Today
+            </p>
+            <h3 className="text-4xl font-black text-emerald-600">
+              {completedToday}
+            </h3>
+            <p className="text-sm text-slate-500">
+              Successfully delivered
+            </p>
+          </div>
+        </Card>
+
+      </div>
+
+      {/* ================= PERFORMANCE + RECENT ================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+        <Card title="Service Performance">
           <PerformanceChart data={performanceData} />
         </Card>
 
         <Card title="Recent Assignments">
           <div className="space-y-4">
+            {recentApps.length === 0 && (
+              <p className="text-sm text-slate-500">
+                No recent assignments available.
+              </p>
+            )}
+
             {recentApps.map((app) => (
               <div
                 key={app.id}
-                className="flex justify-between items-center p-3 bg-slate-50 rounded-lg"
+                className="flex justify-between items-center px-5 py-4 border border-slate-200 rounded-2xl hover:bg-slate-50 transition-colors"
               >
-                <span className="font-medium text-sm text-slate-700">
+                <span className="font-semibold text-sm text-slate-800">
                   {app.service_type}
                 </span>
-                <span className="text-xs font-bold px-2 py-1 bg-blue-100 text-blue-700 rounded uppercase">
-                  {app.status}
+
+                <span
+                  className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide ${
+                    app.status === 'completed'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : app.status === 'pending'
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-blue-100 text-blue-700'
+                  }`}
+                >
+                  {app.status.replace('_', ' ')}
                 </span>
               </div>
             ))}
           </div>
         </Card>
+
       </div>
+
     </div>
   );
 };
