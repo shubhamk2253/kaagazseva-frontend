@@ -6,7 +6,7 @@ interface WalletState {
   totalEarned: number;
   transactions: Transaction[];
   isLoading: boolean;
-  
+
   // Actions
   setWalletData: (data: Wallet) => void;
   addTransactionLocal: (tx: Transaction) => void;
@@ -19,17 +19,45 @@ export const useWalletStore = create<WalletState>((set) => ({
   transactions: [],
   isLoading: false,
 
-  setWalletData: (data) => set({ 
-    balance: data.balance, 
-    totalEarned: data.total_earned,
-    transactions: data.transactions 
-  }),
+  //////////////////////////////////////////////////////
+  // SET WALLET DATA FROM BACKEND
+  //////////////////////////////////////////////////////
 
-  // Used for real-time updates when an action occurs
-  addTransactionLocal: (tx) => set((state) => ({
-    transactions: [tx, ...state.transactions],
-    balance: tx.type === 'credit' ? state.balance + tx.amount : state.balance - tx.amount
-  })),
+  setWalletData: (data) =>
+    set({
+      balance: data.balance,
+      totalEarned: data.totalEarned,
+      transactions: data.transactions ?? [],
+    }),
 
-  setLoading: (status) => set({ isLoading: status })
+  //////////////////////////////////////////////////////
+  // ADD TRANSACTION (LOCAL UPDATE)
+  //////////////////////////////////////////////////////
+
+  addTransactionLocal: (tx) =>
+    set((state) => {
+      let newBalance = state.balance;
+
+      if (tx.type === 'CREDIT') {
+        newBalance += tx.amount;
+      }
+
+      if (tx.type === 'DEBIT' || tx.type === 'PAYOUT' || tx.type === 'REFUND') {
+        newBalance -= tx.amount;
+      }
+
+      return {
+        transactions: [tx, ...state.transactions],
+        balance: newBalance,
+      };
+    }),
+
+  //////////////////////////////////////////////////////
+  // LOADING STATE
+  //////////////////////////////////////////////////////
+
+  setLoading: (status) =>
+    set({
+      isLoading: status,
+    }),
 }));

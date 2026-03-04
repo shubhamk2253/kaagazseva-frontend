@@ -9,6 +9,7 @@ import type { Application } from '@/modules/application/types';
 import type { Wallet } from '@/modules/wallet/types';
 
 const AgentDashboard: React.FC = () => {
+
   const { data: workload, request: fetchWorkload } =
     useApi<Application[], []>(
       applicationService.getAgentWorkload
@@ -16,7 +17,7 @@ const AgentDashboard: React.FC = () => {
 
   const { data: wallet, request: fetchWallet } =
     useApi<Wallet, []>(
-      walletService.getWalletData
+      walletService.getBalance
     );
 
   useEffect(() => {
@@ -26,32 +27,52 @@ const AgentDashboard: React.FC = () => {
 
   const safeWorkload = workload ?? [];
 
-  const pendingTasks = useMemo(
-    () =>
-      safeWorkload.filter(
-        (app) => app.status === 'PENDING_PAYMENT'
-      ).length,
-    [safeWorkload]
-  );
+  //////////////////////////////////////////////////////
+  // ASSIGNED TASKS
+  //////////////////////////////////////////////////////
+
+  const pendingTasks = useMemo(() =>
+    safeWorkload.filter(
+      (app) =>
+        app.status === 'ASSIGNED' ||
+        app.status === 'UNDER_REVIEW' ||
+        app.status === 'DOCUMENT_REQUIRED'
+    ).length,
+  [safeWorkload]);
+
+  //////////////////////////////////////////////////////
+  // COMPLETED TODAY
+  //////////////////////////////////////////////////////
 
   const completedToday = useMemo(() => {
+
     const today = new Date().toDateString();
 
     return safeWorkload.filter((app) => {
+
       if (app.status !== 'COMPLETED') return false;
+
       return (
         new Date(app.updatedAt).toDateString() === today
       );
+
     }).length;
+
   }, [safeWorkload]);
 
+  //////////////////////////////////////////////////////
+  // PERFORMANCE DATA
+  //////////////////////////////////////////////////////
+
   const performanceData = useMemo(() => {
+
     const map: Record<
       string,
       { name: string; received: number; completed: number }
     > = {};
 
     safeWorkload.forEach((app) => {
+
       const service = app.serviceType;
 
       if (!map[service]) {
@@ -67,77 +88,105 @@ const AgentDashboard: React.FC = () => {
       if (app.status === 'COMPLETED') {
         map[service].completed += 1;
       }
+
     });
 
     return Object.values(map);
+
   }, [safeWorkload]);
 
   const recentApps = safeWorkload.slice(0, 5);
 
+  //////////////////////////////////////////////////////
+  // UI
+  //////////////////////////////////////////////////////
+
   return (
+
     <div className="space-y-12">
 
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
+
       <div>
+
         <h1 className="text-4xl font-black text-slate-900 tracking-tight">
           Agent Operations Panel
         </h1>
+
         <p className="text-slate-500 mt-2 text-base">
           Monitor assignments, performance, and commission flow.
         </p>
+
       </div>
 
-      {/* ================= KPI SECTION ================= */}
+      {/* KPI */}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-        {/* Wallet */}
         <Card>
+
           <div className="space-y-3">
+
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
               Wallet Balance
             </p>
+
             <h3 className="text-4xl font-black text-blue-700">
               {formatCurrency(wallet?.balance ?? 0)}
             </h3>
+
             <p className="text-sm text-slate-500">
               Available for withdrawal
             </p>
+
           </div>
+
         </Card>
 
-        {/* Pending */}
         <Card>
+
           <div className="space-y-3">
+
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
               Assigned Tasks
             </p>
+
             <h3 className="text-4xl font-black text-amber-600">
               {pendingTasks}
             </h3>
+
             <p className="text-sm text-slate-500">
               Awaiting execution
             </p>
+
           </div>
+
         </Card>
 
-        {/* Completed Today */}
         <Card>
+
           <div className="space-y-3">
+
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
               Completed Today
             </p>
+
             <h3 className="text-4xl font-black text-emerald-600">
               {completedToday}
             </h3>
+
             <p className="text-sm text-slate-500">
               Successfully delivered
             </p>
+
           </div>
+
         </Card>
 
       </div>
 
-      {/* ================= PERFORMANCE + RECENT ================= */}
+      {/* PERFORMANCE */}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
         <Card title="Service Performance">
@@ -145,7 +194,9 @@ const AgentDashboard: React.FC = () => {
         </Card>
 
         <Card title="Recent Assignments">
+
           <div className="space-y-4">
+
             {recentApps.length === 0 && (
               <p className="text-sm text-slate-500">
                 No recent assignments available.
@@ -153,10 +204,12 @@ const AgentDashboard: React.FC = () => {
             )}
 
             {recentApps.map((app) => (
+
               <div
                 key={app.id}
                 className="flex justify-between items-center px-5 py-4 border border-slate-200 rounded-2xl hover:bg-slate-50 transition-colors"
               >
+
                 <span className="font-semibold text-sm text-slate-800">
                   {app.serviceType}
                 </span>
@@ -165,21 +218,26 @@ const AgentDashboard: React.FC = () => {
                   className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide ${
                     app.status === 'COMPLETED'
                       ? 'bg-emerald-100 text-emerald-700'
-                      : app.status === 'PENDING_PAYMENT'
+                      : app.status === 'ASSIGNED'
                       ? 'bg-amber-100 text-amber-700'
                       : 'bg-blue-100 text-blue-700'
                   }`}
                 >
                   {app.status.replace('_', ' ')}
                 </span>
+
               </div>
+
             ))}
+
           </div>
+
         </Card>
 
       </div>
 
     </div>
+
   );
 };
 

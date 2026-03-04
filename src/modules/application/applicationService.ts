@@ -3,75 +3,115 @@ import type { Application, CreateApplicationDTO } from './types';
 
 export const applicationService = {
 
-  //////////////////////////////////////////////////////
-  // 🚀 CREATE APPLICATION (MULTIPART FORM DATA)
-  //////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// STEP 1 — CREATE DRAFT
+//////////////////////////////////////////////////////
 
-  create: async (data: CreateApplicationDTO): Promise<Application> => {
-    const formData = new FormData();
+create: async (data: CreateApplicationDTO): Promise<Application> => {
 
-    formData.append('serviceType', data.serviceType);
-    formData.append('state', data.state);
-    formData.append('district', data.district);
-    formData.append('govtFee', String(data.govtFee));
-    formData.append('mode', data.mode);
+const payload = {
+  serviceType: data.serviceType,
+  state: data.state,
+  district: data.district,
+  govtFee: data.govtFee,
+  mode: data.mode,
+  customerLat: data.customerLat,
+  customerLng: data.customerLng,
+  deliveryAddress: data.deliveryAddress,
+};
 
-    if (data.customerLat !== undefined) {
-      formData.append('customerLat', String(data.customerLat));
+const response = await apiClient.post(
+  '/applications/draft',
+  payload
+);
+
+const application = response.data.data;
+
+//////////////////////////////////////////////////////
+// STEP 2 — UPLOAD DOCUMENTS
+//////////////////////////////////////////////////////
+
+if (data.documents && data.documents.length > 0) {
+
+  const formData = new FormData();
+
+  data.documents.forEach((file: File) => {
+    formData.append('documents', file);
+  });
+
+  await apiClient.post(
+    `/applications/${application.id}/documents`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     }
+  );
+}
 
-    if (data.customerLng !== undefined) {
-      formData.append('customerLng', String(data.customerLng));
-    }
+return application;
 
-    if (data.deliveryAddress) {
-      formData.append('deliveryAddress', data.deliveryAddress);
-    }
+},
 
-    // 🔥 IMPORTANT — field name MUST match multer config
-    data.documents.forEach((file: File) => {
-      formData.append('documents', file);
-    });
+//////////////////////////////////////////////////////
+// GET BY ID
+//////////////////////////////////////////////////////
 
-    // 🚫 DO NOT manually set Content-Type
-    const response = await apiClient.post('/applications', formData);
+getById: async (id: string): Promise<Application> => {
 
-    return response.data.data;
-  },
+const response = await apiClient.get(
+  `/applications/${id}`
+);
 
-  //////////////////////////////////////////////////////
-  // GET BY ID
-  //////////////////////////////////////////////////////
+return response.data.data;
 
-  getById: async (id: string): Promise<Application> => {
-    const response = await apiClient.get(`/applications/${id}`);
-    return response.data.data;
-  },
+},
 
-  //////////////////////////////////////////////////////
-  // CUSTOMER: MY APPLICATIONS
-  //////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+// CUSTOMER APPLICATIONS
+//////////////////////////////////////////////////////
 
-  getCustomerApplications: async () => {
-    const response = await apiClient.get('/applications/me');
-    return response.data.data;
-  },
+getCustomerApplications: async (): Promise<Application[]> => {
 
-  //////////////////////////////////////////////////////
-  // AGENT WORKLOAD
-  //////////////////////////////////////////////////////
+const response = await apiClient.get(
+  '/applications/me'
+);
 
-  getAgentWorkload: async () => {
-    const response = await apiClient.get('/applications');
-    return response.data.data;
-  },
+return response.data.data;
 
-  //////////////////////////////////////////////////////
-  // ADMIN LIST
-  //////////////////////////////////////////////////////
+},
 
-  getAllApplications: async () => {
-    const response = await apiClient.get('/admin/applications');
-    return response.data.data;
-  },
+//////////////////////////////////////////////////////
+// AGENT WORKLOAD
+//////////////////////////////////////////////////////
+
+getAgentWorkload: async (): Promise<Application[]> => {
+
+const response = await apiClient.get(
+  '/applications'
+);
+
+return response.data.data;
+
+},
+
+//////////////////////////////////////////////////////
+// STATUS UPDATE
+//////////////////////////////////////////////////////
+
+updateStatus: async (
+id: string,
+status: Application['status']
+) => {
+
+const response = await apiClient.patch(
+  `/applications/${id}/status`,
+  { status }
+);
+
+return response.data.data;
+
+},
+
 };

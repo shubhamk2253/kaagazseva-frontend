@@ -6,122 +6,139 @@ import { authService } from '@/modules/auth/authService';
 import { useApi } from '@/hooks/useApi';
 
 interface LocationState {
-  mobile?: string;
+phoneNumber?: string;
 }
 
 interface VerifyResponse {
-  accessToken: string;
-  user: {
-    id: string;
-    phoneNumber: string;
-    name?: string;
-    role: 'admin' | 'agent' | 'customer';
-    createdAt: string;
-  };
+accessToken: string;
+user: {
+id: string;
+phoneNumber: string;
+name?: string;
+role:
+| 'customer'
+| 'agent'
+| 'district_admin'
+| 'state_admin'
+| 'founder';
+createdAt: string;
+};
 }
 
 const VerifyOTP: React.FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+const location = useLocation();
+const navigate = useNavigate();
 
-  const state = location.state as LocationState | null;
-  const mobile = state?.mobile;
+const state = location.state as LocationState | null;
+const phoneNumber = state?.phoneNumber;
 
-  const [otp, setOtp] = useState('');
+const [otp, setOtp] = useState('');
 
-  const { request, loading, error } =
-    useApi<
-      VerifyResponse,
-      [{ mobile: string; otp: string }]
-    >(authService.verifyOtp);
+const { request, loading, error } =
+useApi<VerifyResponse, [{ phoneNumber: string; otp: string }]>(
+authService.verifyOtp
+);
 
-  useEffect(() => {
-    if (!mobile) {
-      navigate('/login', { replace: true });
-    }
-  }, [mobile, navigate]);
+useEffect(() => {
+if (!phoneNumber) {
+navigate('/login', { replace: true });
+}
+}, [phoneNumber, navigate]);
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!mobile || otp.length !== 6) return;
+const handleVerify = async (e: React.FormEvent) => {
+e.preventDefault();
 
-    try {
-      const response = await request({ mobile, otp });
+if (!phoneNumber || otp.length !== 6) return;
 
-      const rolePaths = {
-        admin: '/admin',
-        agent: '/agent',
-        customer: '/customer',
-      };
+try {
+  const response = await request({
+    phoneNumber,
+    otp,
+  });
 
-      navigate(rolePaths[response.user.role], {
-        replace: true,
-      });
-    } catch (err) {
-      console.error('Verification failed:', err);
-    }
+  const rolePaths = {
+    customer: '/customer',
+    agent: '/agent',
+    district_admin: '/district-admin',
+    state_admin: '/state-admin',
+    founder: '/founder',
   };
 
-  return (
-    <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-50 max-w-md mx-auto">
-      <div className="mb-8">
-        <button
-          onClick={() => navigate('/login')}
-          className="text-slate-400 hover:text-blue-600 text-sm font-medium mb-4 flex items-center gap-1 transition-colors"
-        >
-          ← Change Number
-        </button>
+  navigate(rolePaths[response.user.role], {
+    replace: true,
+  });
 
-        <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-          Verify Identity
-        </h2>
+} catch (err) {
+  console.error('Verification failed:', err);
+}
 
-        <p className="text-slate-500 mt-2">
-          We've sent a code to{' '}
-          <span className="font-bold text-slate-900">
-            +91 {mobile ?? ''}
-          </span>
-        </p>
-      </div>
+};
 
-      <form onSubmit={handleVerify} className="space-y-6">
-        <Input
-          label="6-Digit OTP"
-          type="text"
-          placeholder="000000"
-          maxLength={6}
-          value={otp}
-          onChange={(e) =>
-            setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
-          }
-          error={error ?? undefined}
-          disabled={loading}
-          className="text-center text-2xl tracking-[0.5em] font-mono font-bold"
-          autoFocus
-        />
+return (
+<div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-50 max-w-md mx-auto">
+<div className="mb-8">
 
-        <Button
-          fullWidth
-          isLoading={loading}
-          disabled={otp.length !== 6 || loading}
-        >
-          Verify & Log In
-        </Button>
-      </form>
+    <button
+      onClick={() => navigate('/login')}
+      className="text-slate-400 hover:text-blue-600 text-sm font-medium mb-4 flex items-center gap-1 transition-colors"
+    >
+      ← Change Number
+    </button>
 
-      <div className="mt-8 text-center pt-6 border-t border-slate-50">
-        <p className="text-sm text-slate-500">
-          Didn’t receive the code?{' '}
-          <button
-            type="button"
-            className="text-blue-600 font-bold hover:text-blue-700 transition-colors"
-          >
-            Resend
-          </button>
-        </p>
-      </div>
-    </div>
-  );
+    <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+      Verify Identity
+    </h2>
+
+    <p className="text-slate-500 mt-2">
+      We've sent a code to{' '}
+      <span className="font-bold text-slate-900">
+        +91 {phoneNumber ?? ''}
+      </span>
+    </p>
+
+  </div>
+
+  <form onSubmit={handleVerify} className="space-y-6">
+
+    <Input
+      label="6-Digit OTP"
+      type="text"
+      placeholder="000000"
+      maxLength={6}
+      value={otp}
+      onChange={(e) =>
+        setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))
+      }
+      error={error ?? undefined}
+      disabled={loading}
+      className="text-center text-2xl tracking-[0.5em] font-mono font-bold"
+      autoFocus
+    />
+
+    <Button
+      fullWidth
+      isLoading={loading}
+      disabled={otp.length !== 6 || loading}
+    >
+      Verify & Log In
+    </Button>
+
+  </form>
+
+  <div className="mt-8 text-center pt-6 border-t border-slate-50">
+    <p className="text-sm text-slate-500">
+      Didn’t receive the code?{' '}
+      <button
+        type="button"
+        className="text-blue-600 font-bold hover:text-blue-700 transition-colors"
+      >
+        Resend
+      </button>
+    </p>
+  </div>
+</div>
+
+);
 };
 
 export default VerifyOTP;

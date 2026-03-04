@@ -1,27 +1,68 @@
-export type TransactionType = 'credit' | 'debit' | 'payout' | 'refund';
-export type TransactionStatus = 'PENDING_PAYMENT' | 'success' | 'failed';
+//////////////////////////////////////////////////////
+// TRANSACTION TYPES
+//////////////////////////////////////////////////////
+
+export type TransactionType =
+  | 'CREDIT'
+  | 'DEBIT'
+  | 'PAYOUT'
+  | 'REFUND';
+
+export type TransactionStatus =
+  | 'PENDING'
+  | 'SUCCESS'
+  | 'FAILED';
+
+//////////////////////////////////////////////////////
+// TRANSACTION MODEL
+//////////////////////////////////////////////////////
 
 export interface Transaction {
   id: string;
+
   amount: number;
+
   type: TransactionType;
+
   status: TransactionStatus;
-  description: string;
-  reference_id?: string; // Links to an Application ID
+
+  description?: string;
+
+  referenceId?: string; // linked Application ID
+
   createdAt: string;
 }
 
+//////////////////////////////////////////////////////
+// WALLET MODEL
+//////////////////////////////////////////////////////
+
 export interface Wallet {
   id: string;
-  user_id: string;
+
+  userId: string;
+
   balance: number;
-  total_earned: number;
-  last_updated: string;
+
+  totalEarned: number;
+
+  updatedAt: string;
+
   transactions: Transaction[];
 }
 
+//////////////////////////////////////////////////////
+// PAYOUT REQUEST DTO
+//////////////////////////////////////////////////////
+
 export interface PayoutRequestDTO {
   amount: number;
-  upi_id?: string;
-  bank_details?: any;
+
+  upiId?: string;
+
+  bankDetails?: {
+    accountNumber: string;
+    ifsc: string;
+    accountHolder: string;
+  };
 }

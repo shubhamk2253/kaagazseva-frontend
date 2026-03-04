@@ -1,5 +1,5 @@
 import apiClient from '@/config/apiClient';
-import { useAuthStore } from './authStore';
+import { useAuthStore } from '@/modules/auth.store';
 import type {
   LoginDTO,
   VerifyOTPDTO,
@@ -8,8 +8,9 @@ import type {
 } from './types';
 
 /**
- * KAAGAZSEVA - Authentication Service (OTP Based)
- * Backend Route: /api/v1/otp/*
+ * KAAGAZSEVA - Authentication Service
+ * Handles OTP login flow
+ * Backend routes: /api/v1/otp/*
  */
 
 export const authService = {
@@ -17,6 +18,7 @@ export const authService = {
      📲 REQUEST OTP
      POST /otp/send
   ====================================================== */
+
   async requestOtp(data: LoginDTO): Promise<{ message: string }> {
     const response = await apiClient.post('/otp/send', data);
 
@@ -33,6 +35,7 @@ export const authService = {
      🔐 VERIFY OTP + LOGIN
      POST /otp/verify
   ====================================================== */
+
   async verifyOtp(data: VerifyOTPDTO): Promise<AuthResponse> {
     const response = await apiClient.post('/otp/verify', data);
 
@@ -46,7 +49,10 @@ export const authService = {
       throw new Error('Invalid authentication response');
     }
 
-    // Normalize role to lowercase for frontend routing
+    /* ============================================
+       Normalize role (backend uppercase → frontend lowercase)
+    ============================================ */
+
     const normalizedRole =
       backendData.user.role.toLowerCase() as UserRole;
 
@@ -61,7 +67,10 @@ export const authService = {
       },
     };
 
-    // Save to Zustand
+    /* ============================================
+       Save Auth State (Zustand)
+    ============================================ */
+
     useAuthStore.getState().setAuth(
       formattedResponse.user,
       formattedResponse.accessToken
@@ -73,15 +82,35 @@ export const authService = {
   /* ======================================================
      🚪 LOGOUT
   ====================================================== */
+
   logout(): void {
     useAuthStore.getState().logout();
+
     window.location.href = '/login';
   },
 
   /* ======================================================
      👤 GET CURRENT USER
   ====================================================== */
+
   getCurrentUser() {
     return useAuthStore.getState().user;
+  },
+
+  /* ======================================================
+     🔑 GET TOKEN
+  ====================================================== */
+
+  getToken() {
+    return useAuthStore.getState().token;
+  },
+
+  /* ======================================================
+     ✅ CHECK AUTH
+  ====================================================== */
+
+  isAuthenticated() {
+    const token = useAuthStore.getState().token;
+    return !!token;
   },
 };

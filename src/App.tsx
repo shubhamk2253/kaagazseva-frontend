@@ -13,7 +13,7 @@ import PublicLayout from '@/layout/PublicLayout';
 import { DashboardLayout } from '@/layout/DashboardLayout';
 
 /* =========================
-   PUBLIC PAGES
+PUBLIC PAGES
 ========================= */
 
 const Home = React.lazy(() => import('@/pages/public/Home'));
@@ -21,7 +21,7 @@ const Login = React.lazy(() => import('@/pages/auth/Login'));
 const VerifyOTP = React.lazy(() => import('@/pages/auth/VerifyOTP'));
 
 /* =========================
-   CUSTOMER PAGES
+CUSTOMER
 ========================= */
 
 const CustomerDashboard = React.lazy(() =>
@@ -32,8 +32,16 @@ const Apply = React.lazy(() =>
   import('@/pages/customer/Apply')
 );
 
+const PaymentPage = React.lazy(() =>
+  import('@/pages/customer/PaymentPage')
+);
+
+const ApplicationDetails = React.lazy(() =>
+  import('@/pages/customer/ApplicationDetails')
+);
+
 /* =========================
-   AGENT
+AGENT
 ========================= */
 
 const AgentDashboard = React.lazy(() =>
@@ -41,19 +49,39 @@ const AgentDashboard = React.lazy(() =>
 );
 
 /* =========================
-   ADMIN
+DISTRICT ADMIN
 ========================= */
 
-const AdminDashboard = React.lazy(() =>
-  import('@/pages/admin/Dashboard')
+const DistrictAdminDashboard = React.lazy(() =>
+  import('@/pages/district-admin/Dashboard')
+);
+
+/* =========================
+STATE ADMIN
+========================= */
+
+const StateAdminDashboard = React.lazy(() =>
+  import('@/pages/state-admin/Dashboard')
+);
+
+/* =========================
+FOUNDER
+========================= */
+
+const FounderDashboard = React.lazy(() =>
+  import('@/pages/founder/Dashboard')
 );
 
 export const App: React.FC = () => {
+
   const isOnline = useNetworkStatus();
 
   return (
+
     <ErrorBoundary>
+
       <BrowserRouter>
+
         <Toaster position="top-center" reverseOrder={false} />
 
         {!isOnline && (
@@ -63,9 +91,11 @@ export const App: React.FC = () => {
         )}
 
         <Suspense fallback={<Loader fullScreen />}>
+
           <Routes>
 
             {/* ================= PUBLIC ================= */}
+
             <Route element={<PublicLayout />}>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
@@ -73,10 +103,13 @@ export const App: React.FC = () => {
             </Route>
 
             {/* ================= PROTECTED ================= */}
+
             <Route element={<ProtectedRoute />}>
+
               <Route element={<DashboardLayout />}>
 
                 {/* ================= CUSTOMER ================= */}
+
                 <Route
                   path="/customer"
                   element={
@@ -95,7 +128,26 @@ export const App: React.FC = () => {
                   }
                 />
 
+                <Route
+                  path="/customer/payment/:applicationId"
+                  element={
+                    <RoleRoute allowedRoles={['customer']}>
+                      <PaymentPage />
+                    </RoleRoute>
+                  }
+                />
+
+                <Route
+                  path="/customer/application/:id"
+                  element={
+                    <RoleRoute allowedRoles={['customer']}>
+                      <ApplicationDetails />
+                    </RoleRoute>
+                  }
+                />
+
                 {/* ================= AGENT ================= */}
+
                 <Route
                   path="/agent"
                   element={
@@ -105,25 +157,55 @@ export const App: React.FC = () => {
                   }
                 />
 
-                {/* ================= ADMIN ================= */}
+                {/* ================= DISTRICT ADMIN ================= */}
+
                 <Route
-                  path="/admin"
+                  path="/district-admin"
                   element={
-                    <RoleRoute allowedRoles={['admin']}>
-                      <AdminDashboard />
+                    <RoleRoute allowedRoles={['district_admin']}>
+                      <DistrictAdminDashboard />
+                    </RoleRoute>
+                  }
+                />
+
+                {/* ================= STATE ADMIN ================= */}
+
+                <Route
+                  path="/state-admin"
+                  element={
+                    <RoleRoute allowedRoles={['state_admin']}>
+                      <StateAdminDashboard />
+                    </RoleRoute>
+                  }
+                />
+
+                {/* ================= FOUNDER ================= */}
+
+                <Route
+                  path="/founder"
+                  element={
+                    <RoleRoute allowedRoles={['founder']}>
+                      <FounderDashboard />
                     </RoleRoute>
                   }
                 />
 
               </Route>
+
             </Route>
 
             {/* ================= FALLBACK ================= */}
+
             <Route path="*" element={<Navigate to="/" replace />} />
 
           </Routes>
+
         </Suspense>
+
       </BrowserRouter>
+
     </ErrorBoundary>
+
   );
+
 };

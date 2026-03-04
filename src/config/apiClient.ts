@@ -7,28 +7,32 @@ import toast from 'react-hot-toast';
 import { getErrorMessage } from './errorMapper';
 
 /**
- * KAAGAZSEVA - Production API Client (Stable Version)
- * - Reads JWT directly from localStorage (no hydration race)
- * - Auto 401 handling
- * - Global error mapping
+ * KAAGAZSEVA - Production API Client
+ * Features:
+ * - Automatic JWT injection
+ * - Global error handling
+ * - Session expiration handling
+ * - FormData support
+ * - Secure cookie compatibility
  */
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   timeout: 30000,
+  withCredentials: true,
   headers: {
     Accept: 'application/json',
   },
 });
 
 /* ======================================================
-   🔒 REQUEST INTERCEPTOR (Stable JWT Injection)
+   🔒 REQUEST INTERCEPTOR
+   Inject JWT token automatically
 ====================================================== */
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     try {
-      // 🔥 READ TOKEN DIRECTLY FROM PERSISTED STORAGE
       const storage = localStorage.getItem('kaagaz-auth-storage');
 
       if (storage) {
@@ -40,7 +44,7 @@ apiClient.interceptors.request.use(
         }
       }
 
-      // ⚠️ Do NOT manually set Content-Type for FormData
+      // ⚠️ If uploading files (FormData), do NOT set content type manually
       if (config.data instanceof FormData) {
         delete config.headers['Content-Type'];
       }
@@ -56,6 +60,7 @@ apiClient.interceptors.request.use(
 
 /* ======================================================
    🔓 RESPONSE INTERCEPTOR
+   Global error + session handling
 ====================================================== */
 
 apiClient.interceptors.response.use(
@@ -65,11 +70,10 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
 
     /* ========================================
-       🔐 401 — Token Invalid / Expired
+       🔐 SESSION EXPIRED
     ======================================== */
 
     if (status === 401) {
-      // Clear storage manually (no Zustand dependency)
       localStorage.removeItem('kaagaz-auth-storage');
 
       toast.error('Session expired. Please login again.', {
@@ -82,7 +86,7 @@ apiClient.interceptors.response.use(
     }
 
     /* ========================================
-       🌍 Global Error Mapping
+       🌍 GLOBAL ERROR MAPPING
     ======================================== */
 
     const friendlyMessage = getErrorMessage(error);
