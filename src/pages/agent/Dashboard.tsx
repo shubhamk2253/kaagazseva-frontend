@@ -17,7 +17,7 @@ const AgentDashboard: React.FC = () => {
 
   const { data: wallet, request: fetchWallet } =
     useApi<Wallet, []>(
-      walletService.getBalance
+      walletService.getWalletData
     );
 
   useEffect(() => {

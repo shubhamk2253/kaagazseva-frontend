@@ -1,27 +1,31 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/modules/auth/authStore';
 import type { UserRole } from '@/modules/auth/types';
 
 interface RoleRouteProps {
-allowedRoles: UserRole[];
+  allowedRoles: UserRole[];
+  children: React.ReactNode;
 }
 
 /**
-
-* KAAGAZSEVA - Role Route
-* Second security layer
-* Restricts route access by user role
-  */
+ * KAAGAZSEVA - Role Route
+ * Second security layer
+ * Restricts route access by user role
+ */
 
 export const RoleRoute: React.FC<RoleRouteProps> = ({
-allowedRoles,
+  allowedRoles,
+  children,
 }) => {
-const { role } = useAuthStore();
 
-if (!role || !allowedRoles.includes(role)) {
-return <Navigate to="/unauthorized" replace />;
-}
+  const { role } = useAuthStore();
 
-return <Outlet />;
+  // Not authorized
+  if (!role || !allowedRoles.includes(role)) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Authorized
+  return <>{children}</>;
 };

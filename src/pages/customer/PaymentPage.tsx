@@ -4,167 +4,161 @@ import { PaymentGateway } from '@/services/payment.gateway';
 import { usePaymentStore } from '@/store/paymentStore';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
-export const PaymentPage: React.FC = () => {
+const PaymentPage: React.FC = () => {
 
-const { applicationId } = useParams<{ applicationId: string }>();
-const navigate = useNavigate();
+  const { applicationId } = useParams<{ applicationId: string }>();
+  const navigate = useNavigate();
 
-const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-const { fetchApplication, currentApp, initiateOrder } = usePaymentStore();
+  const { fetchApplication, currentApp, initiateOrder } = usePaymentStore();
 
-//////////////////////////////////////////////////////
-// LOAD APPLICATION
-//////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  // LOAD APPLICATION
+  //////////////////////////////////////////////////////
 
-useEffect(() => {
+  useEffect(() => {
+    if (applicationId) {
+      fetchApplication(applicationId);
+    }
+  }, [applicationId, fetchApplication]);
 
-if (applicationId) {
-fetchApplication(applicationId);
-}
+  //////////////////////////////////////////////////////
+  // PAYMENT HANDLER
+  //////////////////////////////////////////////////////
 
-}, [applicationId]);
+  const handlePayment = async () => {
 
-//////////////////////////////////////////////////////
-// PAYMENT HANDLER
-//////////////////////////////////////////////////////
+    if (!applicationId || !currentApp) return;
 
-const handlePayment = async () => {
+    try {
 
-if (!applicationId || !currentApp) return;
+      setIsProcessing(true);
 
-try {
+      //////////////////////////////////////////////////////
+      // STEP 1 — CREATE ORDER
+      //////////////////////////////////////////////////////
 
-setIsProcessing(true);
+      const order = await initiateOrder(applicationId);
 
-//////////////////////////////////////////////////////
-// STEP 1 — CREATE ORDER
-//////////////////////////////////////////////////////
+      //////////////////////////////////////////////////////
+      // STEP 2 — OPEN RAZORPAY
+      //////////////////////////////////////////////////////
 
-const order = await initiateOrder(applicationId);
+      await PaymentGateway.openCheckout(
 
-//////////////////////////////////////////////////////
-// STEP 2 — OPEN RAZORPAY
-//////////////////////////////////////////////////////
+        order,
 
-await PaymentGateway.openCheckout(
+        {
+          name: currentApp.customer?.name,
+          phoneNumber: currentApp.customer?.phoneNumber
+        },
 
-order,
+        //////////////////////////////////////////////////////
+        // SUCCESS
+        //////////////////////////////////////////////////////
 
-{
-name: currentApp.customer?.name,
-phoneNumber: currentApp.customer?.phoneNumber
-},
+        async (response: any) => {
 
-//////////////////////////////////////////////////////
-// SUCCESS
-//////////////////////////////////////////////////////
+          await PaymentGateway.verifyPayment(response);
 
-async (response: any) => {
+          navigate('/customer');
 
-await PaymentGateway.verifyPayment(response);
+        },
 
-navigate('/customer');
+        //////////////////////////////////////////////////////
+        // CANCEL
+        //////////////////////////////////////////////////////
 
-},
+        () => {
+          setIsProcessing(false);
+        }
 
-//////////////////////////////////////////////////////
-// CANCEL
-//////////////////////////////////////////////////////
+      );
 
-() => {
+    } catch (err) {
 
-setIsProcessing(false);
+      console.error('Payment failed', err);
+      setIsProcessing(false);
 
-}
+    }
 
-);
+  };
 
-} catch (err) {
+  //////////////////////////////////////////////////////
+  // LOADING
+  //////////////////////////////////////////////////////
 
-console.error('Payment failed', err);
-setIsProcessing(false);
+  if (!currentApp) {
+    return <LoadingSpinner />;
+  }
 
-}
+  //////////////////////////////////////////////////////
+  // UI
+  //////////////////////////////////////////////////////
 
-};
+  return (
 
-//////////////////////////////////////////////////////
-// LOADING
-//////////////////////////////////////////////////////
+    <div className="max-w-2xl mx-auto p-6">
 
-if (!currentApp) {
-return <LoadingSpinner />;
-}
+      <h1 className="text-2xl font-bold mb-6">
+        Complete Payment
+      </h1>
 
-//////////////////////////////////////////////////////
-// UI
-//////////////////////////////////////////////////////
+      <div className="bg-white shadow rounded-xl p-6 mb-6">
 
-return (
+        <h2 className="text-lg font-semibold border-b pb-2">
+          {currentApp.serviceType}
+        </h2>
 
-<div className="max-w-2xl mx-auto p-6">
+        <div className="mt-4 space-y-2">
 
-<h1 className="text-2xl font-bold mb-6">
-Complete Payment
-</h1>
+          <div className="flex justify-between">
+            <span>Government Fee</span>
+            <span>₹{currentApp.govtFee}</span>
+          </div>
 
-<div className="bg-white shadow rounded-xl p-6 mb-6">
+          <div className="flex justify-between">
+            <span>Service Fee</span>
+            <span>₹{currentApp.serviceFee}</span>
+          </div>
 
-<h2 className="text-lg font-semibold border-b pb-2">
-{currentApp.serviceType}
-</h2>
+          {currentApp.deliveryFee > 0 && (
+            <div className="flex justify-between">
+              <span>Doorstep Delivery</span>
+              <span>₹{currentApp.deliveryFee}</span>
+            </div>
+          )}
 
-<div className="mt-4 space-y-2">
+          <div className="flex justify-between font-bold text-xl border-t pt-3 mt-3">
+            <span>Total Payable</span>
+            <span>₹{currentApp.totalAmount}</span>
+          </div>
 
-<div className="flex justify-between">
-<span>Government Fee</span>
-<span>₹{currentApp.govtFee}</span>
-</div>
+        </div>
 
-<div className="flex justify-between">
-<span>Service Fee</span>
-<span>₹{currentApp.serviceFee}</span>
-</div>
+      </div>
 
-{currentApp.deliveryFee > 0 && (
-<div className="flex justify-between">
-<span>Doorstep Delivery</span>
-<span>₹{currentApp.deliveryFee}</span>
-</div>
-)}
+      <button
+        disabled={isProcessing || currentApp.status !== 'DRAFT'}
+        onClick={handlePayment}
+        className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 disabled:bg-gray-400"
+      >
 
-<div className="flex justify-between font-bold text-xl border-t pt-3 mt-3">
-<span>Total Payable</span>
-<span>₹{currentApp.totalAmount}</span>
-</div>
+        {isProcessing
+          ? 'Securing Transaction...'
+          : `Pay ₹${currentApp.totalAmount}`}
 
-</div>
+      </button>
 
-</div>
+      <p className="text-center text-xs text-gray-500 mt-4">
+        🔒 Secured by Razorpay. Funds remain protected in escrow until service completion.
+      </p>
 
-<button
+    </div>
 
-disabled={isProcessing || currentApp.status !== 'DRAFT'}
-
-onClick={handlePayment}
-
-className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 disabled:bg-gray-400"
-
->
-
-{isProcessing
-? 'Securing Transaction...'
-: `Pay ₹${currentApp.totalAmount}`}
-
-</button>
-
-<p className="text-center text-xs text-gray-500 mt-4">
-🔒 Secured by Razorpay. Funds remain protected in escrow until service completion.
-</p>
-
-</div>
-
-);
+  );
 
 };
+
+export default PaymentPage;

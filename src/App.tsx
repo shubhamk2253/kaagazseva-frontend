@@ -24,62 +24,41 @@ const VerifyOTP = React.lazy(() => import('@/pages/auth/VerifyOTP'));
 CUSTOMER
 ========================= */
 
-const CustomerDashboard = React.lazy(() =>
-  import('@/pages/customer/Dashboard')
-);
-
-const Apply = React.lazy(() =>
-  import('@/pages/customer/Apply')
-);
-
-const PaymentPage = React.lazy(() =>
-  import('@/pages/customer/PaymentPage')
-);
-
-const ApplicationDetails = React.lazy(() =>
-  import('@/pages/customer/ApplicationDetails')
-);
+const CustomerDashboard = React.lazy(() => import('@/pages/customer/Dashboard'));
+const Apply = React.lazy(() => import('@/pages/customer/Apply'));
+const PaymentPage = React.lazy(() => import('@/pages/customer/PaymentPage'));
+const ApplicationDetails = React.lazy(() => import('@/pages/customer/ApplicationDetails'));
 
 /* =========================
 AGENT
 ========================= */
 
-const AgentDashboard = React.lazy(() =>
-  import('@/pages/agent/Dashboard')
-);
+const AgentDashboard = React.lazy(() => import('@/pages/agent/Dashboard'));
 
 /* =========================
 DISTRICT ADMIN
 ========================= */
 
-const DistrictAdminDashboard = React.lazy(() =>
-  import('@/pages/district-admin/Dashboard')
-);
+const DistrictAdminDashboard = React.lazy(() => import('@/pages/district-admin/Dashboard'));
 
 /* =========================
 STATE ADMIN
 ========================= */
 
-const StateAdminDashboard = React.lazy(() =>
-  import('@/pages/state-admin/Dashboard')
-);
+const StateAdminDashboard = React.lazy(() => import('@/pages/state-admin/Dashboard'));
 
 /* =========================
 FOUNDER
 ========================= */
 
-const FounderDashboard = React.lazy(() =>
-  import('@/pages/founder/Dashboard')
-);
+const FounderDashboard = React.lazy(() => import('@/pages/founder/Dashboard'));
 
 export const App: React.FC = () => {
 
   const isOnline = useNetworkStatus();
 
   return (
-
     <ErrorBoundary>
-
       <BrowserRouter>
 
         <Toaster position="top-center" reverseOrder={false} />
@@ -203,9 +182,6 @@ export const App: React.FC = () => {
         </Suspense>
 
       </BrowserRouter>
-
     </ErrorBoundary>
-
   );
-
 };
