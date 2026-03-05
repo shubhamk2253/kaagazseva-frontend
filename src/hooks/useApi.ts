@@ -8,14 +8,16 @@ interface ApiState<T> {
 
 /**
  * KAAGAZSEVA - Universal API Hook
- * Fully typed, memory-safe, abort protected.
+ * Typed, abort-safe, reusable across the platform.
  */
+
 export const useApi = <
   T,
-  Args extends any[] = []   // ✅ DEFAULT ADDED HERE
+  Args extends any[] = []
 >(
   apiFunction: (...args: Args) => Promise<T>
 ) => {
+
   const [state, setState] = useState<ApiState<T>>({
     data: null,
     error: null,
@@ -24,21 +26,29 @@ export const useApi = <
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  //////////////////////////////////////////////////////
+  // REQUEST FUNCTION
+  //////////////////////////////////////////////////////
+
   const request = useCallback(
     async (...args: Args): Promise<T> => {
+
+      // Cancel previous request if exists
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
 
-      abortControllerRef.current = new AbortController();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         loading: true,
         error: null,
       }));
 
       try {
+
         const result = await apiFunction(...args);
 
         setState({
@@ -48,11 +58,14 @@ export const useApi = <
         });
 
         return result;
+
       } catch (err: any) {
-        if (err.name !== 'CanceledError') {
+
+        if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+
           const message =
-            err.response?.data?.message ||
-            err.message ||
+            err?.response?.data?.message ||
+            err?.message ||
             'Something went wrong';
 
           setState({
@@ -60,22 +73,38 @@ export const useApi = <
             error: message,
             loading: false,
           });
+
         }
 
         throw err;
+
       }
+
     },
     [apiFunction]
   );
 
+  //////////////////////////////////////////////////////
+  // CLEANUP ON UNMOUNT
+  //////////////////////////////////////////////////////
+
   useEffect(() => {
+
     return () => {
       abortControllerRef.current?.abort();
     };
+
   }, []);
 
+  //////////////////////////////////////////////////////
+  // RETURN
+  //////////////////////////////////////////////////////
+
   return {
-    ...state,
+    data: state.data,
+    error: state.error,
+    loading: state.loading,
     request,
   };
+
 };

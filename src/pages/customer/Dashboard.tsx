@@ -13,7 +13,7 @@ const {
 data: apps,
 request: fetchApps,
 } = useApi<Application[], []>(
-applicationService.getMyApplications
+applicationService.getCustomerApplications
 );
 
 useEffect(() => {

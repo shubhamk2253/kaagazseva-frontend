@@ -10,27 +10,45 @@ import {
   BarChart3,
 } from 'lucide-react';
 
+type MenuItem = {
+  label: string;
+  path: string;
+  icon: React.ElementType;
+};
+
 export const Sidebar: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
   const { role } = useAuth();
   const location = useLocation();
 
-  const menuItems = {
-    admin: [
-      { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-      { label: 'Manage Agents', path: '/admin/agents', icon: Users },
-      { label: 'Revenue', path: '/admin/revenue', icon: BarChart3 },
+  const menuItems: Record<string, MenuItem[]> = {
+
+    founder: [
+      { label: 'Dashboard', path: '/founder', icon: LayoutDashboard },
+      { label: 'Revenue', path: '/founder/revenue', icon: BarChart3 },
     ],
+
+    state_admin: [
+      { label: 'Dashboard', path: '/state-admin', icon: LayoutDashboard },
+      { label: 'Agents', path: '/state-admin/agents', icon: Users },
+    ],
+
+    district_admin: [
+      { label: 'Dashboard', path: '/district-admin', icon: LayoutDashboard },
+      { label: 'Agents', path: '/district-admin/agents', icon: Users },
+    ],
+
     agent: [
       { label: 'My Workload', path: '/agent', icon: LayoutDashboard },
       { label: 'Wallet', path: '/agent/wallet', icon: Wallet },
     ],
+
     customer: [
       { label: 'My Requests', path: '/customer', icon: FileText },
       { label: 'New Application', path: '/customer/apply', icon: PlusCircle },
     ],
   };
 
-  const currentMenu = role ? menuItems[role] : [];
+  const currentMenu = role ? menuItems[role] || [] : [];
 
   if (!isOpen) return null;
 
@@ -50,7 +68,8 @@ export const Sidebar: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
       {/* NAVIGATION */}
       <nav className="flex-1 mt-6 px-4 space-y-2">
 
-        {currentMenu.map((item) => {
+        {currentMenu.map((item: MenuItem) => {
+
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
 
@@ -66,14 +85,19 @@ export const Sidebar: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
             >
               <Icon
                 className={`w-5 h-5 ${
-                  isActive ? 'text-blue-700' : 'text-blue-300 group-hover:text-white'
+                  isActive
+                    ? 'text-blue-700'
+                    : 'text-blue-300 group-hover:text-white'
                 }`}
               />
+
               <span className="text-sm font-semibold tracking-wide">
                 {item.label}
               </span>
+
             </Link>
           );
+
         })}
 
       </nav>
@@ -82,6 +106,7 @@ export const Sidebar: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
       <div className="px-6 py-5 border-t border-blue-800 text-xs text-blue-300">
         Structured National Platform
       </div>
+
     </aside>
   );
 };

@@ -5,61 +5,74 @@ import { RoleRoute } from './RoleRoute';
 import { Loader } from '@/components/ui/Loader';
 
 /* =========================
-   Public Pages
+   PUBLIC PAGES
 ========================= */
 
 const Login = lazy(() => import('@/pages/auth/Login'));
 const VerifyOTP = lazy(() => import('@/pages/auth/VerifyOTP'));
 
 /* =========================
-   Admin Pages
+   CUSTOMER
 ========================= */
 
-const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
-const ControlTower = lazy(() => import('@/pages/admin/ControlTower'));
+const CustomerDashboard = lazy(() =>
+  import('@/pages/customer/Dashboard')
+);
 
 /* =========================
-   Agent Pages
+   AGENT
 ========================= */
 
-const AgentDashboard = lazy(() => import('@/pages/agent/Dashboard'));
+const AgentDashboard = lazy(() =>
+  import('@/pages/agent/Dashboard')
+);
 
 /* =========================
-   Customer Pages
+   ADMINS
 ========================= */
 
-const CustomerDashboard = lazy(() => import('@/pages/customer/Dashboard'));
+const DistrictAdminDashboard = lazy(() =>
+  import('@/pages/district-admin/Dashboard')
+);
+
+const StateAdminDashboard = lazy(() =>
+  import('@/pages/state-admin/Dashboard')
+);
+
+const FounderDashboard = lazy(() =>
+  import('@/pages/founder/Dashboard')
+);
 
 export const AppRoutes: React.FC = () => {
+
   return (
+
     <Suspense fallback={<Loader fullScreen />}>
+
       <Routes>
-        {/* ================= PUBLIC ================= */}
+
+        {/* PUBLIC */}
+
         <Route path="/login" element={<Login />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
 
-        {/* ================= PROTECTED ================= */}
+        {/* PROTECTED */}
+
         <Route element={<ProtectedRoute />}>
 
-          {/* ---------------- ADMIN ---------------- */}
+          {/* CUSTOMER */}
+
           <Route
-            path="/admin"
+            path="/customer"
             element={
-              <RoleRoute allowedRoles={['admin']}>
-                <AdminDashboard />
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/admin/control-tower"
-            element={
-              <RoleRoute allowedRoles={['admin']}>
-                <ControlTower />
+              <RoleRoute allowedRoles={['customer']}>
+                <CustomerDashboard />
               </RoleRoute>
             }
           />
 
-          {/* ---------------- AGENT ---------------- */}
+          {/* AGENT */}
+
           <Route
             path="/agent"
             element={
@@ -69,20 +82,48 @@ export const AppRoutes: React.FC = () => {
             }
           />
 
-          {/* ---------------- CUSTOMER ---------------- */}
+          {/* DISTRICT ADMIN */}
+
           <Route
-            path="/customer"
+            path="/district-admin"
             element={
-              <RoleRoute allowedRoles={['customer']}>
-                <CustomerDashboard />
+              <RoleRoute allowedRoles={['district_admin']}>
+                <DistrictAdminDashboard />
               </RoleRoute>
             }
           />
+
+          {/* STATE ADMIN */}
+
+          <Route
+            path="/state-admin"
+            element={
+              <RoleRoute allowedRoles={['state_admin']}>
+                <StateAdminDashboard />
+              </RoleRoute>
+            }
+          />
+
+          {/* FOUNDER */}
+
+          <Route
+            path="/founder"
+            element={
+              <RoleRoute allowedRoles={['founder']}>
+                <FounderDashboard />
+              </RoleRoute>
+            }
+          />
+
         </Route>
 
-        {/* ================= FALLBACK ================= */}
+        {/* FALLBACK */}
+
         <Route path="*" element={<Navigate to="/login" replace />} />
+
       </Routes>
+
     </Suspense>
+
   );
 };

@@ -62,7 +62,7 @@ export const AgentWallet: React.FC = () => {
           >
             <div>
               <p className="text-sm font-bold text-slate-900">
-                Reference ID: {tx.reference_id}
+                Reference ID: {tx.referenceId}
               </p>
               <p className="text-xs text-slate-500">
                 {new Date(tx.createdAt).toLocaleDateString()}

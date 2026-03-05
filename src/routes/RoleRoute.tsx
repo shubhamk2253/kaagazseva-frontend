@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/modules/auth/authStore';
 import type { UserRole } from '@/modules/auth/types';
 
@@ -10,8 +10,9 @@ interface RoleRouteProps {
 
 /**
  * KAAGAZSEVA - Role Route
- * Second security layer
- * Restricts route access by user role
+ *
+ * Second security layer after ProtectedRoute.
+ * Ensures that only specific roles can access a route.
  */
 
 export const RoleRoute: React.FC<RoleRouteProps> = ({
@@ -19,13 +20,29 @@ export const RoleRoute: React.FC<RoleRouteProps> = ({
   children,
 }) => {
 
-  const { role } = useAuthStore();
+  const { role, isAuthenticated } = useAuthStore();
+  const location = useLocation();
 
-  // Not authorized
+  //////////////////////////////////////////////////////
+  // AUTH CHECK
+  //////////////////////////////////////////////////////
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  //////////////////////////////////////////////////////
+  // ROLE CHECK
+  //////////////////////////////////////////////////////
+
   if (!role || !allowedRoles.includes(role)) {
     return <Navigate to="/login" replace />;
   }
 
-  // Authorized
+  //////////////////////////////////////////////////////
+  // AUTHORIZED
+  //////////////////////////////////////////////////////
+
   return <>{children}</>;
+
 };

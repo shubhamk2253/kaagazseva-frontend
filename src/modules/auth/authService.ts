@@ -1,5 +1,5 @@
 import apiClient from '@/config/apiClient';
-import { useAuthStore } from '@/modules/auth.store';
+import { useAuthStore } from '@/modules/auth/authStore';
 import type {
   LoginDTO,
   VerifyOTPDTO,
