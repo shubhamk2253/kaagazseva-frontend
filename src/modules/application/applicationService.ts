@@ -3,115 +3,111 @@ import type { Application, CreateApplicationDTO } from './types';
 
 export const applicationService = {
 
-//////////////////////////////////////////////////////
-// STEP 1 — CREATE DRAFT
-//////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  // STEP 1 — CREATE APPLICATION DRAFT
+  //////////////////////////////////////////////////////
 
-create: async (data: CreateApplicationDTO): Promise<Application> => {
+  create: async (data: CreateApplicationDTO): Promise<Application> => {
 
-const payload = {
-  serviceType: data.serviceType,
-  state: data.state,
-  district: data.district,
-  govtFee: data.govtFee,
-  mode: data.mode,
-  customerLat: data.customerLat,
-  customerLng: data.customerLng,
-  deliveryAddress: data.deliveryAddress,
-};
+    const payload = {
+      serviceId: data.serviceId,
+      stateId: data.stateId,
+      pincode: data.pincode,
+      mode: data.mode,
+      customerLat: data.customerLat,
+      customerLng: data.customerLng,
+      deliveryAddress: data.deliveryAddress,
+    };
 
-const response = await apiClient.post(
-  '/applications/draft',
-  payload
-);
+    const response = await apiClient.post(
+      '/applications/draft',
+      payload
+    );
 
-const application = response.data.data;
+    const application = response.data.data;
 
-//////////////////////////////////////////////////////
-// STEP 2 — UPLOAD DOCUMENTS
-//////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////
+    // STEP 2 — ATTACH DOCUMENTS
+    //////////////////////////////////////////////////////
 
-if (data.documents && data.documents.length > 0) {
+    if (data.documents && data.documents.length > 0) {
 
-  const formData = new FormData();
+      const documentsPayload = data.documents.map((file: File) => ({
+        name: file.name,
+        fileUrl: URL.createObjectURL(file)
+      }));
 
-  data.documents.forEach((file: File) => {
-    formData.append('documents', file);
-  });
+      await apiClient.post(
+        `/applications/${application.applicationId}/documents`,
+        {
+          documents: documentsPayload
+        }
+      );
 
-  await apiClient.post(
-    `/applications/${application.id}/documents`,
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
     }
-  );
-}
 
-return application;
+    return application;
 
-},
+  },
 
-//////////////////////////////////////////////////////
-// GET BY ID
-//////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  // GET APPLICATION BY ID
+  //////////////////////////////////////////////////////
 
-getById: async (id: string): Promise<Application> => {
+  getById: async (id: string): Promise<Application> => {
 
-const response = await apiClient.get(
-  `/applications/${id}`
-);
+    const response = await apiClient.get(
+      `/applications/${id}`
+    );
 
-return response.data.data;
+    return response.data.data;
 
-},
+  },
 
-//////////////////////////////////////////////////////
-// CUSTOMER APPLICATIONS
-//////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  // CUSTOMER APPLICATION LIST
+  //////////////////////////////////////////////////////
 
-getCustomerApplications: async (): Promise<Application[]> => {
+  getCustomerApplications: async (): Promise<Application[]> => {
 
-const response = await apiClient.get(
-  '/applications/me'
-);
+    const response = await apiClient.get(
+      '/applications'
+    );
 
-return response.data.data;
+    return response.data.data;
 
-},
+  },
 
-//////////////////////////////////////////////////////
-// AGENT WORKLOAD
-//////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  // AGENT WORKLOAD
+  //////////////////////////////////////////////////////
 
-getAgentWorkload: async (): Promise<Application[]> => {
+  getAgentWorkload: async (): Promise<Application[]> => {
 
-const response = await apiClient.get(
-  '/applications'
-);
+    const response = await apiClient.get(
+      '/applications'
+    );
 
-return response.data.data;
+    return response.data.data;
 
-},
+  },
 
-//////////////////////////////////////////////////////
-// STATUS UPDATE
-//////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  // UPDATE APPLICATION STATUS
+  //////////////////////////////////////////////////////
 
-updateStatus: async (
-id: string,
-status: Application['status']
-) => {
+  updateStatus: async (
+    id: string,
+    status: Application['status']
+  ) => {
 
-const response = await apiClient.patch(
-  `/applications/${id}/status`,
-  { status }
-);
+    const response = await apiClient.patch(
+      `/applications/${id}/status`,
+      { status }
+    );
 
-return response.data.data;
+    return response.data.data;
 
-},
+  },
 
 };

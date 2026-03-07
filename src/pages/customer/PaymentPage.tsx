@@ -1,85 +1,108 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { PaymentGateway } from '@/services/payment.gateway';
-import { usePaymentStore } from '@/store/paymentStore';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { applicationService } from '../../modules/application/applicationService';
+import { paymentService } from '../../modules/payment/paymentService';
+import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 const PaymentPage: React.FC = () => {
 
   const { applicationId } = useParams<{ applicationId: string }>();
   const navigate = useNavigate();
 
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const { fetchApplication, currentApp, initiateOrder } = usePaymentStore();
+  const [application, setApplication] = useState<any>(null);
+  const [processing, setProcessing] = useState(false);
 
   //////////////////////////////////////////////////////
   // LOAD APPLICATION
   //////////////////////////////////////////////////////
 
   useEffect(() => {
-    if (applicationId) {
-      fetchApplication(applicationId);
-    }
-  }, [applicationId, fetchApplication]);
+
+    const loadApplication = async () => {
+
+      if (!applicationId) return;
+
+      try {
+
+        const app = await applicationService.getById(applicationId);
+        setApplication(app);
+
+      } catch (err) {
+
+        console.error('Failed to load application', err);
+
+      }
+
+    };
+
+    loadApplication();
+
+  }, [applicationId]);
 
   //////////////////////////////////////////////////////
-  // PAYMENT HANDLER
+  // HANDLE PAYMENT
   //////////////////////////////////////////////////////
 
   const handlePayment = async () => {
 
-    if (!applicationId || !currentApp) return;
+    if (!applicationId || !application) return;
 
     try {
 
-      setIsProcessing(true);
+      setProcessing(true);
 
       //////////////////////////////////////////////////////
-      // STEP 1 — CREATE ORDER
+      // CREATE ORDER
       //////////////////////////////////////////////////////
 
-      const order = await initiateOrder(applicationId);
+      const order = await paymentService.createOrder(applicationId);
 
       //////////////////////////////////////////////////////
-      // STEP 2 — OPEN RAZORPAY
+      // RAZORPAY OPTIONS
       //////////////////////////////////////////////////////
 
-      await PaymentGateway.openCheckout(
+      const options = {
 
-        order,
+        key: import.meta.env.VITE_RAZORPAY_KEY,
 
-        {
-          name: currentApp.customer?.name,
-          phoneNumber: currentApp.customer?.phoneNumber
+        order_id: order.orderId,
+        amount: order.amount,
+        currency: order.currency,
+
+        name: 'KaagazSeva',
+        description: 'Government Service Payment',
+
+        prefill: {
+          name: application.customer?.name,
+          contact: application.customer?.phoneNumber
         },
 
-        //////////////////////////////////////////////////////
-        // SUCCESS
-        //////////////////////////////////////////////////////
-
-        async (response: any) => {
-
-          await PaymentGateway.verifyPayment(response);
-
-          navigate('/customer');
-
+        theme: {
+          color: '#2563eb'
         },
 
-        //////////////////////////////////////////////////////
-        // CANCEL
-        //////////////////////////////////////////////////////
+        handler: () => {
 
-        () => {
-          setIsProcessing(false);
+          // Payment verified via webhook
+          navigate(`/customer/application/${applicationId}`);
+
         }
 
-      );
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
 
     } catch (err) {
 
       console.error('Payment failed', err);
-      setIsProcessing(false);
+      setProcessing(false);
 
     }
 
@@ -89,7 +112,7 @@ const PaymentPage: React.FC = () => {
   // LOADING
   //////////////////////////////////////////////////////
 
-  if (!currentApp) {
+  if (!application) {
     return <LoadingSpinner />;
   }
 
@@ -108,31 +131,31 @@ const PaymentPage: React.FC = () => {
       <div className="bg-white shadow rounded-xl p-6 mb-6">
 
         <h2 className="text-lg font-semibold border-b pb-2">
-          {currentApp.serviceType}
+          {application.serviceType}
         </h2>
 
         <div className="mt-4 space-y-2">
 
           <div className="flex justify-between">
             <span>Government Fee</span>
-            <span>₹{currentApp.govtFee}</span>
+            <span>₹{application.govtFee}</span>
           </div>
 
           <div className="flex justify-between">
             <span>Service Fee</span>
-            <span>₹{currentApp.serviceFee}</span>
+            <span>₹{application.serviceFee}</span>
           </div>
 
-          {currentApp.deliveryFee > 0 && (
+          {application.deliveryFee > 0 && (
             <div className="flex justify-between">
               <span>Doorstep Delivery</span>
-              <span>₹{currentApp.deliveryFee}</span>
+              <span>₹{application.deliveryFee}</span>
             </div>
           )}
 
           <div className="flex justify-between font-bold text-xl border-t pt-3 mt-3">
             <span>Total Payable</span>
-            <span>₹{currentApp.totalAmount}</span>
+            <span>₹{application.totalAmount}</span>
           </div>
 
         </div>
@@ -140,14 +163,14 @@ const PaymentPage: React.FC = () => {
       </div>
 
       <button
-        disabled={isProcessing || currentApp.status !== 'DRAFT'}
+        disabled={processing || application.status !== 'DRAFT'}
         onClick={handlePayment}
         className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 disabled:bg-gray-400"
       >
 
-        {isProcessing
+        {processing
           ? 'Securing Transaction...'
-          : `Pay ₹${currentApp.totalAmount}`}
+          : `Pay ₹${application.totalAmount}`}
 
       </button>
 

@@ -11,7 +11,6 @@ interface AuthState {
   isLoading: boolean;
   isHydrated: boolean;
 
-  // Actions
   setAuth: (user: User, token: string) => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
@@ -20,12 +19,12 @@ interface AuthState {
 
 /**
  * KAAGAZSEVA - Global Authentication Store
- * Zustand + Persistence
  */
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
+
       user: null,
       token: null,
       role: null,
@@ -34,33 +33,38 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       isHydrated: false,
 
-      /* =====================================
-         SET AUTH
-      ===================================== */
+      //////////////////////////////////////////////////////
+      // SET AUTH
+      //////////////////////////////////////////////////////
 
       setAuth: (user, token) => {
+
         set({
           user,
           token,
-          role: user.role,
-          isAuthenticated: true,
+          role: user?.role ?? null,
+          isAuthenticated: !!token,
           isLoading: false,
         });
+
       },
 
-      /* =====================================
-         LOADING STATE
-      ===================================== */
+      //////////////////////////////////////////////////////
+      // LOADING
+      //////////////////////////////////////////////////////
 
       setLoading: (loading) => {
+
         set({ isLoading: loading });
+
       },
 
-      /* =====================================
-         LOGOUT
-      ===================================== */
+      //////////////////////////////////////////////////////
+      // LOGOUT
+      //////////////////////////////////////////////////////
 
       logout: () => {
+
         set({
           user: null,
           token: null,
@@ -69,17 +73,24 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
         });
 
-        // Clear persisted storage
-        localStorage.removeItem('kaagaz-auth-storage');
+        try {
+          localStorage.removeItem('kaagaz-auth-storage');
+        } catch (err) {
+          console.error('Storage cleanup failed', err);
+        }
+
       },
 
-      /* =====================================
-         HYDRATION FLAG
-      ===================================== */
+      //////////////////////////////////////////////////////
+      // HYDRATION
+      //////////////////////////////////////////////////////
 
       setHydrated: () => {
+
         set({ isHydrated: true });
+
       },
+
     }),
 
     {
@@ -87,9 +98,9 @@ export const useAuthStore = create<AuthState>()(
 
       storage: createJSONStorage(() => localStorage),
 
-      /* =====================================
-         Persist only required fields
-      ===================================== */
+      //////////////////////////////////////////////////////
+      // Persist only required fields
+      //////////////////////////////////////////////////////
 
       partialize: (state) => ({
         user: state.user,
@@ -98,12 +109,14 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
       }),
 
-      /* =====================================
-         Hydration Handling
-      ===================================== */
+      //////////////////////////////////////////////////////
+      // Hydration handler
+      //////////////////////////////////////////////////////
 
       onRehydrateStorage: () => (state) => {
-        state?.setHydrated();
+        if (state) {
+          state.setHydrated();
+        }
       },
     }
   )

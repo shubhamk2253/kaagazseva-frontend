@@ -21,21 +21,28 @@ const Login: React.FC = () => {
 
     e.preventDefault();
 
-    if (!isValidMobile(mobile)) return;
+    if (!isValidMobile(mobile) || loading) return;
 
     try {
 
+      // Backend requires full Indian number
+      const phoneNumber = `91${mobile}`;
+
       await request({
-        mobile: mobile
+        phoneNumber
       });
 
+      //////////////////////////////////////////////////////
+      // Navigate to OTP verification
+      //////////////////////////////////////////////////////
+
       navigate('/verify-otp', {
-        state: { phoneNumber: mobile }
+        state: { phoneNumber }
       });
 
     } catch (err) {
 
-      console.error('Login failed:', err);
+      console.error('OTP request failed:', err);
 
     }
 

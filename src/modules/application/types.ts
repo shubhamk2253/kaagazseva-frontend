@@ -5,91 +5,97 @@ ENUMS (Aligned with Prisma)
 =================================== */
 
 export type ApplicationStatus =
-| 'DRAFT'
-| 'PENDING_PAYMENT'
-| 'SUBMITTED'
-| 'ASSIGNED'
-| 'UNDER_REVIEW'
-| 'DOCUMENT_REQUIRED'
-| 'COMPLETED'
-| 'REJECTED'
-| 'CANCELLED';
+  | 'DRAFT'
+  | 'PENDING_PAYMENT'
+  | 'SUBMITTED'
+  | 'ASSIGNED'
+  | 'UNDER_REVIEW'
+  | 'DOCUMENT_REQUIRED'
+  | 'COMPLETED'
+  | 'REJECTED'
+  | 'CANCELLED';
 
 export type ServiceMode =
-| 'DIGITAL'
-| 'DOORSTEP'
-| 'FULL';
+  | 'DIGITAL'
+  | 'DOORSTEP';
 
 /* ===================================
-Core Application Model (Backend Aligned)
+CORE APPLICATION MODEL
 =================================== */
 
 export interface Application {
-id: string;
+  id: string;
 
-serviceType: string;
-state: string;
-district: string;
+  serviceId?: string;
+  serviceType: string;
 
-mode: ServiceMode;
-status: ApplicationStatus;
+  state: string;
+  district: string;
 
-govtFee: number;
-serviceFee: number;
-platformCommission: number;
-agentCommission: number;
-deliveryFee: number;
-totalAmount: number;
+  mode: ServiceMode;
+  status: ApplicationStatus;
 
-documents: Record<string, unknown>;
+  govtFee: number;
+  serviceFee: number;
+  platformCommission: number;
+  agentCommission: number;
+  deliveryFee: number;
+  totalAmount: number;
 
-createdAt: string;
-updatedAt: string;
+  pricingSnapshot?: unknown;
 
-customerId?: string;
-agentId?: string;
+  documents?: unknown[];
 
-customer?: User;
-agent?: User;
+  createdAt: string;
+  updatedAt: string;
+
+  customerId?: string;
+  agentId?: string;
+
+  customer?: User;
+  agent?: User;
 }
 
 /* ===================================
-CREATE DTO
+CREATE APPLICATION DTO
 =================================== */
 
 export interface CreateApplicationDTO {
-serviceType: string;
-state: string;
-district: string;
 
-govtFee: number;
-mode: ServiceMode;
+  serviceId: string;
+  stateId: string;
+  pincode: string;
 
-customerLat?: number;
-customerLng?: number;
+  mode: ServiceMode;
 
-deliveryAddress?: string;
+  customerLat?: number;
+  customerLng?: number;
 
-documents: File[];
+  deliveryAddress?: string;
+
+  documents?: File[];
+
 }
 
 /* ===================================
-Agent Dashboard Summary
+AGENT DASHBOARD SUMMARY
 =================================== */
 
 export interface AgentDashboardStats {
-pendingTasks: number;
-completedToday: number;
 
-performanceData: {
-name: string;
-received: number;
-completed: number;
-}[];
+  pendingTasks: number;
+  completedToday: number;
 
-recentApps: {
-id: string;
-serviceType: string;
-status: ApplicationStatus;
-}[];
+  performanceData: {
+    name: string;
+    received: number;
+    completed: number;
+  }[];
+
+  recentApps: {
+    id: string;
+    serviceType: string;
+    status: ApplicationStatus;
+  }[];
+
 }

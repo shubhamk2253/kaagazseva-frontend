@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { authService } from '@/modules/auth/authService';
 import { useApi } from '@/hooks/useApi';
+import { useAuthStore } from '@/modules/auth/authStore';
+import type { UserRole } from '@/modules/auth/types';
 
 interface LocationState {
   phoneNumber?: string;
@@ -15,12 +17,7 @@ interface VerifyResponse {
     id: string;
     phoneNumber: string;
     name?: string;
-    role:
-      | 'customer'
-      | 'agent'
-      | 'district_admin'
-      | 'state_admin'
-      | 'founder';
+    role: UserRole;
     createdAt: string;
   };
 }
@@ -29,6 +26,7 @@ const VerifyOTP: React.FC = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const setAuth = useAuthStore((s) => s.setAuth);
 
   const state = location.state as LocationState | null;
   const phoneNumber = state?.phoneNumber;
@@ -36,7 +34,7 @@ const VerifyOTP: React.FC = () => {
   const [otp, setOtp] = useState('');
 
   const { request, loading, error } =
-    useApi<VerifyResponse, [{ mobile: string; otp: string }]>(
+    useApi<VerifyResponse, [{ phoneNumber: string; otp: string }]>(
       authService.verifyOtp
     );
 
@@ -45,11 +43,9 @@ const VerifyOTP: React.FC = () => {
   //////////////////////////////////////////////////////
 
   useEffect(() => {
-
     if (!phoneNumber) {
       navigate('/login', { replace: true });
     }
-
   }, [phoneNumber, navigate]);
 
   //////////////////////////////////////////////////////
@@ -65,11 +61,30 @@ const VerifyOTP: React.FC = () => {
     try {
 
       const response = await request({
-        mobile: phoneNumber,
+        phoneNumber,
         otp,
       });
 
-      const rolePaths = {
+      //////////////////////////////////////////////////////
+      // SAVE AUTH SESSION
+      //////////////////////////////////////////////////////
+
+      setAuth(
+        {
+          id: response.user.id,
+          phoneNumber: response.user.phoneNumber,
+          name: response.user.name ?? undefined,
+          role: response.user.role,
+          createdAt: response.user.createdAt,
+        },
+        response.accessToken
+      );
+
+      //////////////////////////////////////////////////////
+      // ROLE REDIRECT
+      //////////////////////////////////////////////////////
+
+      const rolePaths: Record<UserRole, string> = {
         customer: '/customer',
         agent: '/agent',
         district_admin: '/district-admin',

@@ -23,11 +23,11 @@ export interface AuthResponse {
 /* ============================= */
 
 export interface LoginDTO {
-  mobile: string;
+  phoneNumber: string;
 }
 
 export interface VerifyOTPDTO {
-  mobile: string;
+  phoneNumber: string;
   otp: string;
 }
 

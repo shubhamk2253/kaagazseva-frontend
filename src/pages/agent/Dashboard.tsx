@@ -10,20 +10,32 @@ import type { Wallet } from '@/modules/wallet/types';
 
 const AgentDashboard: React.FC = () => {
 
-  const { data: workload, request: fetchWorkload } =
-    useApi<Application[], []>(
-      applicationService.getAgentWorkload
-    );
+  const {
+    data: workload,
+    loading: loadingWorkload,
+    request: fetchWorkload,
+  } = useApi<Application[], []>(
+    applicationService.getAgentWorkload
+  );
 
-  const { data: wallet, request: fetchWallet } =
-    useApi<Wallet, []>(
-      walletService.getWalletData
-    );
+  const {
+    data: wallet,
+    loading: loadingWallet,
+    request: fetchWallet,
+  } = useApi<Wallet, []>(
+    walletService.getWalletData
+  );
+
+  //////////////////////////////////////////////////////
+  // INITIAL LOAD
+  //////////////////////////////////////////////////////
 
   useEffect(() => {
+
     fetchWorkload();
     fetchWallet();
-  }, [fetchWorkload, fetchWallet]);
+
+  }, []);
 
   const safeWorkload = workload ?? [];
 
@@ -101,6 +113,14 @@ const AgentDashboard: React.FC = () => {
   // UI
   //////////////////////////////////////////////////////
 
+  if (loadingWorkload || loadingWallet) {
+    return (
+      <div className="text-center text-slate-500 py-10">
+        Loading agent dashboard...
+      </div>
+    );
+  }
+
   return (
 
     <div className="space-y-12">
@@ -132,7 +152,7 @@ const AgentDashboard: React.FC = () => {
             </p>
 
             <h3 className="text-4xl font-black text-blue-700">
-              {formatCurrency(wallet?.balance ?? 0)}
+              {formatCurrency(Number(wallet?.balance ?? 0))}
             </h3>
 
             <p className="text-sm text-slate-500">

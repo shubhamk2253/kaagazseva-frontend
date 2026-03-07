@@ -2,38 +2,39 @@ import axios, {
   AxiosError,
   AxiosResponse,
   InternalAxiosRequestConfig,
-} from 'axios';
-import toast from 'react-hot-toast';
-import { getErrorMessage } from './errorMapper';
+} from "axios";
+import toast from "react-hot-toast";
 
 /**
- * KAAGAZSEVA - Production API Client
- * Features:
- * - Automatic JWT injection
+ * KAAGAZSEVA - API CLIENT
+ * Handles:
+ * - Base backend connection
+ * - JWT token injection
  * - Global error handling
- * - Session expiration handling
- * - FormData support
- * - Secure cookie compatibility
+ * - Session expiration
  */
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL:
+    import.meta.env.VITE_API_URL ||
+    "https://kaagazseva-backend.onrender.com/api/v1",
   timeout: 30000,
-  withCredentials: true,
+  withCredentials: false,
   headers: {
-    Accept: 'application/json',
+    Accept: "application/json",
+    "Content-Type": "application/json",
   },
 });
 
-/* ======================================================
-   🔒 REQUEST INTERCEPTOR
-   Inject JWT token automatically
-====================================================== */
+///////////////////////////////////////////////////////////
+// REQUEST INTERCEPTOR
+// Inject JWT automatically
+///////////////////////////////////////////////////////////
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     try {
-      const storage = localStorage.getItem('kaagaz-auth-storage');
+      const storage = localStorage.getItem("kaagaz-auth-storage");
 
       if (storage) {
         const parsed = JSON.parse(storage);
@@ -44,13 +45,12 @@ apiClient.interceptors.request.use(
         }
       }
 
-      // ⚠️ If uploading files (FormData), do NOT set content type manually
+      // If uploading FormData do not set content-type
       if (config.data instanceof FormData) {
-        delete config.headers['Content-Type'];
+        delete config.headers["Content-Type"];
       }
-
     } catch (err) {
-      console.error('JWT read error:', err);
+      console.error("Token read error:", err);
     }
 
     return config;
@@ -58,10 +58,10 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-/* ======================================================
-   🔓 RESPONSE INTERCEPTOR
-   Global error + session handling
-====================================================== */
+///////////////////////////////////////////////////////////
+// RESPONSE INTERCEPTOR
+// Global error + session handling
+///////////////////////////////////////////////////////////
 
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
@@ -69,31 +69,22 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const status = error.response?.status;
 
-    /* ========================================
-       🔐 SESSION EXPIRED
-    ======================================== */
-
+    // Session expired
     if (status === 401) {
-      localStorage.removeItem('kaagaz-auth-storage');
+      localStorage.removeItem("kaagaz-auth-storage");
 
-      toast.error('Session expired. Please login again.', {
-        id: 'session-expired',
-      });
+      toast.error("Session expired. Please login again.");
 
-      window.location.href = '/login';
+      window.location.href = "/login";
 
       return Promise.reject(error);
     }
 
-    /* ========================================
-       🌍 GLOBAL ERROR MAPPING
-    ======================================== */
+    const message =
+      (error.response?.data as any)?.message ||
+      "Something went wrong. Please try again.";
 
-    const friendlyMessage = getErrorMessage(error);
-
-    toast.error(friendlyMessage, {
-      id: 'global-api-error',
-    });
+    toast.error(message);
 
     return Promise.reject(error);
   }

@@ -34,6 +34,7 @@ AGENT
 ========================= */
 
 const AgentDashboard = React.lazy(() => import('@/pages/agent/Dashboard'));
+const AgentWallet = React.lazy(() => import('@/pages/agent/Wallet'));
 
 /* =========================
 DISTRICT ADMIN
@@ -132,6 +133,15 @@ export const App: React.FC = () => {
                   element={
                     <RoleRoute allowedRoles={['agent']}>
                       <AgentDashboard />
+                    </RoleRoute>
+                  }
+                />
+
+                <Route
+                  path="/agent/wallet"
+                  element={
+                    <RoleRoute allowedRoles={['agent']}>
+                      <AgentWallet />
                     </RoleRoute>
                   }
                 />

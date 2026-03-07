@@ -9,52 +9,66 @@ import type {
 
 /**
  * KAAGAZSEVA - Authentication Service
- * Handles OTP login flow
- * Backend routes: /api/v1/otp/*
+ * Backend routes: /api/v1/auth/*
  */
 
 export const authService = {
-  /* ======================================================
-     📲 REQUEST OTP
-     POST /otp/send
-  ====================================================== */
+
+  //////////////////////////////////////////////////////
+  // REQUEST OTP
+  // POST /auth/send-otp
+  //////////////////////////////////////////////////////
 
   async requestOtp(data: LoginDTO): Promise<{ message: string }> {
-    const response = await apiClient.post('/otp/send', data);
 
-    if (!response.data?.success) {
-      throw new Error(response.data?.message || 'Failed to send OTP');
+    const response = await apiClient.post('/auth/send-otp', data);
+
+    const res = response.data;
+
+    if (!res?.success) {
+      throw new Error(res?.message || 'Failed to send OTP');
     }
 
     return {
-      message: response.data.message,
+      message: res.message || 'OTP sent successfully',
     };
   },
 
-  /* ======================================================
-     🔐 VERIFY OTP + LOGIN
-     POST /otp/verify
-  ====================================================== */
+  //////////////////////////////////////////////////////
+  // VERIFY OTP
+  // POST /auth/verify-otp
+  //////////////////////////////////////////////////////
 
   async verifyOtp(data: VerifyOTPDTO): Promise<AuthResponse> {
-    const response = await apiClient.post('/otp/verify', data);
 
-    if (!response.data?.success || !response.data?.data) {
-      throw new Error(response.data?.message || 'OTP verification failed');
+    const response = await apiClient.post('/auth/verify-otp', data);
+
+    const res = response.data;
+
+    if (!res?.success || !res?.data) {
+      throw new Error(res?.message || 'OTP verification failed');
     }
 
-    const backendData = response.data.data;
+    const backendData = res.data;
+
+    //////////////////////////////////////////////////////
+    // VALIDATE RESPONSE
+    //////////////////////////////////////////////////////
 
     if (!backendData.accessToken || !backendData.user) {
-      throw new Error('Invalid authentication response');
+      throw new Error('Invalid authentication response from server');
     }
 
-    /* ============================================
-       Normalize role (backend uppercase → frontend lowercase)
-    ============================================ */
+    //////////////////////////////////////////////////////
+    // NORMALIZE ROLE
+    //////////////////////////////////////////////////////
 
     const normalizedRole =
-      backendData.user.role.toLowerCase() as UserRole;
+      backendData.user.role?.toLowerCase() as UserRole;
+
+    //////////////////////////////////////////////////////
+    // FORMAT RESPONSE
+    //////////////////////////////////////////////////////
 
     const formattedResponse: AuthResponse = {
       accessToken: backendData.accessToken,
@@ -67,9 +81,9 @@ export const authService = {
       },
     };
 
-    /* ============================================
-       Save Auth State (Zustand)
-    ============================================ */
+    //////////////////////////////////////////////////////
+    // SAVE AUTH STATE (ZUSTAND)
+    //////////////////////////////////////////////////////
 
     useAuthStore.getState().setAuth(
       formattedResponse.user,
@@ -79,38 +93,48 @@ export const authService = {
     return formattedResponse;
   },
 
-  /* ======================================================
-     🚪 LOGOUT
-  ====================================================== */
+  //////////////////////////////////////////////////////
+  // LOGOUT
+  //////////////////////////////////////////////////////
 
   logout(): void {
+
     useAuthStore.getState().logout();
 
     window.location.href = '/login';
+
   },
 
-  /* ======================================================
-     👤 GET CURRENT USER
-  ====================================================== */
+  //////////////////////////////////////////////////////
+  // GET CURRENT USER
+  //////////////////////////////////////////////////////
 
   getCurrentUser() {
+
     return useAuthStore.getState().user;
+
   },
 
-  /* ======================================================
-     🔑 GET TOKEN
-  ====================================================== */
+  //////////////////////////////////////////////////////
+  // GET TOKEN
+  //////////////////////////////////////////////////////
 
   getToken() {
+
     return useAuthStore.getState().token;
+
   },
 
-  /* ======================================================
-     ✅ CHECK AUTH
-  ====================================================== */
+  //////////////////////////////////////////////////////
+  // CHECK AUTH
+  //////////////////////////////////////////////////////
 
   isAuthenticated() {
+
     const token = useAuthStore.getState().token;
+
     return !!token;
+
   },
+
 };

@@ -9,21 +9,21 @@ const ApplyService: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const [serviceType, setServiceType] = useState('');
-  const [stateName, setStateName] = useState('');
-  const [district, setDistrict] = useState('');
-  const [govtFee, setGovtFee] = useState('');
+  const [serviceId, setServiceId] = useState('');
+  const [stateId, setStateId] = useState('');
+  const [pincode, setPincode] = useState('');
+
   const [mode, setMode] = useState<'DIGITAL' | 'DOORSTEP'>('DIGITAL');
 
   const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [customerLat, setCustomerLat] = useState<number | null>(null);
-  const [customerLng, setCustomerLng] = useState<number | null>(null);
+  const [customerLat, setCustomerLat] = useState<number | undefined>();
+  const [customerLng, setCustomerLng] = useState<number | undefined>();
 
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
 
   //////////////////////////////////////////////////////
-  // GET GPS LOCATION
+  // CAPTURE GPS
   //////////////////////////////////////////////////////
 
   const captureLocation = () => {
@@ -51,14 +51,8 @@ const ApplyService: React.FC = () => {
 
   const handleSubmit = async () => {
 
-    if (
-      !serviceType ||
-      !stateName ||
-      !district ||
-      !govtFee ||
-      files.length === 0
-    ) {
-      alert('Please fill all required fields');
+    if (!serviceId || !stateId || !pincode) {
+      alert('Please fill required fields');
       return;
     }
 
@@ -67,15 +61,14 @@ const ApplyService: React.FC = () => {
     try {
 
       const application = await applicationService.create({
-        serviceType,
-        state: stateName,
-        district,
-        govtFee: Number(govtFee),
+        serviceId,
+        stateId,
+        pincode,
         mode,
         customerLat,
         customerLng,
         deliveryAddress,
-        documents: files,
+        documents: files
       });
 
       //////////////////////////////////////////////////////
@@ -110,28 +103,21 @@ const ApplyService: React.FC = () => {
         <div className="space-y-4">
 
           <Input
-            label="Service Type"
-            value={serviceType}
-            onChange={(e) => setServiceType(e.target.value)}
+            label="Service ID"
+            value={serviceId}
+            onChange={(e) => setServiceId(e.target.value)}
           />
 
           <Input
-            label="State"
-            value={stateName}
-            onChange={(e) => setStateName(e.target.value)}
+            label="State ID"
+            value={stateId}
+            onChange={(e) => setStateId(e.target.value)}
           />
 
           <Input
-            label="District"
-            value={district}
-            onChange={(e) => setDistrict(e.target.value)}
-          />
-
-          <Input
-            label="Government Fee"
-            type="number"
-            value={govtFee}
-            onChange={(e) => setGovtFee(e.target.value)}
+            label="Pincode"
+            value={pincode}
+            onChange={(e) => setPincode(e.target.value)}
           />
 
           <select
