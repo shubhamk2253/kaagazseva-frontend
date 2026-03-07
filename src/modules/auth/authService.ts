@@ -21,7 +21,7 @@ export const authService = {
 
   async requestOtp(data: LoginDTO): Promise<{ message: string }> {
 
-    const response = await apiClient.post('/auth/send-otp', data);
+    const response = await apiClient.post('/auth/request-otp', data);
 
     const res = response.data;
 
