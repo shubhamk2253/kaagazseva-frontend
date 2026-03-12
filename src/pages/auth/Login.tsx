@@ -1,62 +1,96 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { ShieldCheck, ArrowRight, Smartphone } from 'lucide-react';
-import { authService } from '@/modules/auth/authService';
-import { useApi } from '@/hooks/useApi';
 import { isValidMobile } from '@/utils/validators';
+
+import { auth } from '@/firebase';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+
+declare global {
+  interface Window {
+    recaptchaVerifier: any;
+    confirmationResult: any;
+  }
+}
 
 const Login: React.FC = () => {
 
-const [mobile, setMobile] = useState('');
-const navigate = useNavigate();
-
-const { request, loading, error } = useApi(authService.requestOtp);
-
-//////////////////////////////////////////////////////
-// SEND OTP
-//////////////////////////////////////////////////////
-
-const handleSendOTP = async (e: React.FormEvent) => {
-
-e.preventDefault();
-
-if (!isValidMobile(mobile) || loading) return;
-
-try {
-
-  // Send only 10 digit number to backend
-  const phoneNumber = mobile;
-
-  await request({
-    phoneNumber
-  });
+  const [mobile, setMobile] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   //////////////////////////////////////////////////////
-  // Navigate to OTP verification
+  // INIT RECAPTCHA
   //////////////////////////////////////////////////////
 
-  navigate('/verify-otp', {
-    state: { phoneNumber }
-  });
+  useEffect(() => {
 
-} catch (err) {
+    if (!window.recaptchaVerifier) {
 
-  console.error('OTP request failed:', err);
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        'recaptcha-container',
+        {
+          size: 'invisible'
+        }
+      );
 
-}
+    }
 
-};
+  }, []);
 
-const isFormValid = isValidMobile(mobile);
+  //////////////////////////////////////////////////////
+  // SEND OTP (FIREBASE)
+  //////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////
-// UI
-//////////////////////////////////////////////////////
+  const handleSendOTP = async (e: React.FormEvent) => {
 
-return (
+    e.preventDefault();
+
+    if (!isValidMobile(mobile) || loading) return;
+
+    try {
+
+      setLoading(true);
+
+      const appVerifier = window.recaptchaVerifier;
+
+      const confirmation = await signInWithPhoneNumber(
+        auth,
+        '+91' + mobile,
+        appVerifier
+      );
+
+      window.confirmationResult = confirmation;
+
+      navigate('/verify-otp', {
+        state: { phoneNumber: mobile }
+      });
+
+    } catch (error) {
+
+      console.error('OTP send failed:', error);
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+  const isFormValid = isValidMobile(mobile);
+
+  //////////////////////////////////////////////////////
+  // UI
+  //////////////////////////////////////////////////////
+
+  return (
 
 <div className="w-full max-w-md mx-auto">
+
+  <div id="recaptcha-container"></div>
 
   <div className="bg-white rounded-[32px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-slate-100 relative overflow-hidden">
 
@@ -96,7 +130,6 @@ return (
                 : 'border-red-200 bg-red-50/10'
               : 'border-slate-100 bg-slate-50/50'
           }
-          focus-within:border-blue-600 focus-within:bg-white focus-within:shadow-xl focus-within:shadow-blue-50
         `}
         >
 
@@ -117,7 +150,7 @@ return (
           />
 
           {isFormValid && (
-            <div className="pr-5 animate-in zoom-in duration-300">
+            <div className="pr-5">
               <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                 <ShieldCheck className="w-4 h-4 text-white" />
               </div>
@@ -125,12 +158,6 @@ return (
           )}
 
         </div>
-
-        {error && (
-          <p className="text-xs font-bold text-red-500 ml-1 animate-in slide-in-from-top-1">
-            {error}
-          </p>
-        )}
 
       </div>
 
@@ -157,20 +184,9 @@ return (
 
   </div>
 
-  <p className="mt-8 text-center text-[10px] text-slate-400 font-bold leading-relaxed uppercase tracking-tighter">
-    By continuing, you agree to KaagazSeva's <br />
-    <span className="text-slate-900 cursor-pointer hover:text-blue-600 transition-colors">
-      Terms of Service
-    </span>{' '}
-    &{' '}
-    <span className="text-slate-900 cursor-pointer hover:text-blue-600 transition-colors">
-      Privacy Policy
-    </span>
-  </p>
-
 </div>
 
-);
+  );
 
 };
 

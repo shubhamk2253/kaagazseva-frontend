@@ -2,13 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { authService } from '@/modules/auth/authService';
-import { useApi } from '@/hooks/useApi';
 import { useAuthStore } from '@/modules/auth/authStore';
+import { authService } from '@/modules/auth/authService';
 import type { UserRole } from '@/modules/auth/types';
 
 interface LocationState {
   phoneNumber?: string;
+}
+
+declare global {
+  interface Window {
+    confirmationResult: any;
+  }
 }
 
 interface VerifyResponse {
@@ -32,11 +37,8 @@ const VerifyOTP: React.FC = () => {
   const phoneNumber = state?.phoneNumber;
 
   const [otp, setOtp] = useState('');
-
-  const { request, loading, error } =
-    useApi<VerifyResponse, [{ phoneNumber: string; otp: string }]>(
-      authService.verifyOtp
-    );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   //////////////////////////////////////////////////////
   // REDIRECT IF NO PHONE
@@ -60,10 +62,25 @@ const VerifyOTP: React.FC = () => {
 
     try {
 
-      const response = await request({
-        phoneNumber,
-        otp,
-      });
+      setLoading(true);
+      setError(null);
+
+      //////////////////////////////////////////////////////
+      // STEP 1 — VERIFY WITH FIREBASE
+      //////////////////////////////////////////////////////
+
+      const result = await window.confirmationResult.confirm(otp);
+
+      const firebaseUser = result.user;
+
+      //////////////////////////////////////////////////////
+      // STEP 2 — LOGIN BACKEND (CREATE JWT)
+      //////////////////////////////////////////////////////
+
+      const response: VerifyResponse =
+        await authService.firebaseLogin({
+          phoneNumber: firebaseUser.phoneNumber.replace('+91','')
+        });
 
       //////////////////////////////////////////////////////
       // SAVE AUTH SESSION
@@ -98,7 +115,12 @@ const VerifyOTP: React.FC = () => {
 
     } catch (err) {
 
-      console.error('Verification failed:', err);
+      console.error('OTP verification failed:', err);
+      setError('Invalid OTP');
+
+    } finally {
+
+      setLoading(false);
 
     }
 
@@ -160,20 +182,6 @@ const VerifyOTP: React.FC = () => {
         </Button>
 
       </form>
-
-      <div className="mt-8 text-center pt-6 border-t border-slate-50">
-
-        <p className="text-sm text-slate-500">
-          Didn’t receive the code?{' '}
-          <button
-            type="button"
-            className="text-blue-600 font-bold hover:text-blue-700 transition-colors"
-          >
-            Resend
-          </button>
-        </p>
-
-      </div>
 
     </div>
 

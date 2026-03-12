@@ -1,52 +1,27 @@
 import apiClient from '@/config/apiClient';
 import { useAuthStore } from '@/modules/auth/authStore';
-import type {
-  LoginDTO,
-  VerifyOTPDTO,
-  AuthResponse,
-  UserRole,
-} from './types';
+import type { AuthResponse, UserRole } from './types';
 
 /**
  * KAAGAZSEVA - Authentication Service
- * Backend routes: /api/v1/auth/*
+ * Firebase OTP + Backend Session
  */
 
 export const authService = {
 
   //////////////////////////////////////////////////////
-  // REQUEST OTP
-  // POST /auth/send-otp
+  // FIREBASE LOGIN
+  // POST /auth/firebase-login
   //////////////////////////////////////////////////////
 
-  async requestOtp(data: LoginDTO): Promise<{ message: string }> {
+  async firebaseLogin(data: { phoneNumber: string }): Promise<AuthResponse> {
 
-    const response = await apiClient.post('/auth/request-otp', data);
-
-    const res = response.data;
-
-    if (!res?.success) {
-      throw new Error(res?.message || 'Failed to send OTP');
-    }
-
-    return {
-      message: res.message || 'OTP sent successfully',
-    };
-  },
-
-  //////////////////////////////////////////////////////
-  // VERIFY OTP
-  // POST /auth/verify-otp
-  //////////////////////////////////////////////////////
-
-  async verifyOtp(data: VerifyOTPDTO): Promise<AuthResponse> {
-
-    const response = await apiClient.post('/auth/verify-otp', data);
+    const response = await apiClient.post('/auth/firebase-login', data);
 
     const res = response.data;
 
     if (!res?.success || !res?.data) {
-      throw new Error(res?.message || 'OTP verification failed');
+      throw new Error(res?.message || 'Authentication failed');
     }
 
     const backendData = res.data;
@@ -56,7 +31,7 @@ export const authService = {
     //////////////////////////////////////////////////////
 
     if (!backendData.accessToken || !backendData.user) {
-      throw new Error('Invalid authentication response from server');
+      throw new Error('Invalid authentication response');
     }
 
     //////////////////////////////////////////////////////
@@ -91,6 +66,7 @@ export const authService = {
     );
 
     return formattedResponse;
+
   },
 
   //////////////////////////////////////////////////////
