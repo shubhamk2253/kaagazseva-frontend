@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { ShieldCheck, ArrowRight, Smartphone } from 'lucide-react';
 import { isValidMobile } from '@/utils/validators';
 
-import { auth } from '@/firebase';
+import { auth } from '@/config/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 
 declare global {
